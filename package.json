@@ -1,48 +1,52 @@
 {
   "name": "@vscode/vsce",
   "version": "0.0.1",
+  "private": "false",
   "description": "VS Code Extensions Manager",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
   "keywords": [
     "vscode",
     "vsce",
     "extension"
   ],
-  "publishConfig": {
-    "access": "public"
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
-  "contributors": [
-    "Microsoft Corporation"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "license": "MIT",
+  "contributors": [
+    "Microsoft Corporation"
+  ],
+  "publisher": "playform",
+  "type": "module",
   "main": "out/api.js",
   "typings": "dist/vsce.d.ts",
   "bin": {
     "vsce": "vsce"
   },
   "scripts": {
-    "compile": "tsc",
     "api": "api-extractor run --local --verbose",
     "build": "npm run compile && npm run api",
-    "watch:build": "npm run compile -- --watch",
+    "compile": "tsc",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
     "test": "mocha",
-    "watch:test": "npm run test -- --watch",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "watch:build": "npm run compile -- --watch",
+    "watch:test": "npm run test -- --watch"
   },
-  "engines": {
-    "node": ">= 14"
+  "mocha": {
+    "require": [
+      "ts-node/register"
+    ],
+    "spec": "src/test/**/*.ts",
+    "watch-files": "src/**"
   },
   "dependencies": {
     "azure-devops-node-api": "12.1.0",
@@ -92,13 +96,10 @@
   "optionalDependencies": {
     "keytar": "7.9.0"
   },
-  "mocha": {
-    "require": [
-      "ts-node/register"
-    ],
-    "watch-files": "src/**",
-    "spec": "src/test/**/*.ts"
+  "engines": {
+    "node": ">= 14"
   },
-  "type": "module",
-  "private": "false"
+  "publishConfig": {
+    "access": "public"
+  }
 }

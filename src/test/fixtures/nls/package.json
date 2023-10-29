@@ -2,80 +2,36 @@
   "name": "node-debug",
   "displayName": "Node Debug",
   "version": "0.0.1",
-  "publisher": "ms-vscode",
+  "private": "false",
   "description": "%extension.description%",
   "categories": [
     "Debuggers"
   ],
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "license": "MIT",
-  "private": "false",
-  "scripts": {
-    "prepublish": "node ./node_modules/gulp/bin/gulp.js build",
-    "build": "node ./node_modules/gulp/bin/gulp.js build",
-    "test": "node ./node_modules/mocha/bin/mocha --timeout 10000 -u tdd ./out/tests/",
-    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "engines": {
-    "vscode": "1.6.0",
-    "node": "5.10.0"
-  },
-  "dependencies": {
-    "vscode-debugprotocol": "1.51.0-pre.0",
-    "vscode-debugadapter": "1.51.0-pre.0",
-    "source-map": "0.7.4",
-    "vscode-nls": "5.2.0",
-    "request-light": "0.7.0",
-    "glob": "10.3.10"
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
-  "devDependencies": {
-    "@types/es6-collections": "0.5.35",
-    "@types/es6-promise": "0.0.33",
-    "@types/mocha": "10.0.3",
-    "@types/node": "20.8.9",
-    "@types/source-map": "0.5.2",
-    "gulp": "4.0.2",
-    "gulp-util": "3.0.7",
-    "gulp-typescript": "5.0.1",
-    "gulp-tsb": "2.0.0",
-    "gulp-sourcemaps": "3.0.0",
-    "gulp-filter": "8.0.0",
-    "gulp-azure-storage": "*",
-    "gulp-tslint": "8.1.4",
-    "gulp-uglify": "3.0.2",
-    "tslint-microsoft-contrib": "2.0.10",
-    "git-rev-sync": "*",
-    "del": "*",
-    "run-sequence": "*",
-    "gulp-vinyl-zip": "*",
-    "mocha": "10.2.0",
-    "tslint": "5.20.1",
-    "typescript": "5.2.2",
-    "vscode": "0.11.18",
-    "vscode-nls-dev": "4.0.4",
-    "vscode-debugadapter-testsupport": "1.51.0-pre.0",
-    "nodemon": "3.0.1",
-    "vsce": "1.12.0",
-    "typescript-esbuild": "0.3.1"
-  },
+  "publisher": "playform",
+  "type": "module",
   "main": "./out/node/extension",
-  "activationEvents": [
-    "onCommand:extension.pickNodeProcess",
-    "onCommand:extension.provideInitialConfigurations"
-  ],
+  "scripts": {
+    "build": "node ./node_modules/gulp/bin/gulp.js build",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "prepublish": "node ./node_modules/gulp/bin/gulp.js build",
+    "test": "node ./node_modules/mocha/bin/mocha --timeout 10000 -u tdd ./out/tests/"
+  },
   "contributes": {
     "breakpoints": [
       {
@@ -368,8 +324,52 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "type": "module",
+  "activationEvents": [
+    "onCommand:extension.pickNodeProcess",
+    "onCommand:extension.provideInitialConfigurations"
+  ],
+  "dependencies": {
+    "glob": "10.3.10",
+    "request-light": "0.7.0",
+    "source-map": "0.7.4",
+    "vscode-debugadapter": "1.51.0-pre.0",
+    "vscode-debugprotocol": "1.51.0-pre.0",
+    "vscode-nls": "5.2.0"
+  },
+  "devDependencies": {
+    "@types/es6-collections": "0.5.35",
+    "@types/es6-promise": "0.0.33",
+    "@types/mocha": "10.0.3",
+    "@types/node": "20.8.9",
+    "@types/source-map": "0.5.2",
+    "del": "*",
+    "git-rev-sync": "*",
+    "gulp": "4.0.2",
+    "gulp-azure-storage": "*",
+    "gulp-filter": "8.0.0",
+    "gulp-sourcemaps": "3.0.0",
+    "gulp-tsb": "2.0.0",
+    "gulp-tslint": "8.1.4",
+    "gulp-typescript": "5.0.1",
+    "gulp-uglify": "3.0.2",
+    "gulp-util": "3.0.7",
+    "gulp-vinyl-zip": "*",
+    "mocha": "10.2.0",
+    "nodemon": "3.0.1",
+    "run-sequence": "*",
+    "tslint": "5.20.1",
+    "tslint-microsoft-contrib": "2.0.10",
+    "typescript": "5.2.2",
+    "typescript-esbuild": "0.3.1",
+    "vsce": "1.12.0",
+    "vscode": "0.11.18",
+    "vscode-debugadapter-testsupport": "1.51.0-pre.0",
+    "vscode-nls-dev": "4.0.4"
+  },
+  "engines": {
+    "node": "5.10.0",
+    "vscode": "1.6.0"
+  },
   "publishConfig": {
     "access": "public"
   }
