@@ -1,94 +1,104 @@
 {
-	"name": "@vscode/vsce",
-	"version": "0.0.0",
-	"description": "VS Code Extensions Manager",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Microsoft/vsce"
-	},
-	"homepage": "https://code.visualstudio.com",
-	"bugs": "https://github.com/Microsoft/vsce/issues",
-	"keywords": [
-		"vscode",
-		"vsce",
-		"extension"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"contributors": [
-		"Microsoft Corporation"
-	],
-	"author": "Microsoft Corporation",
-	"license": "MIT",
-	"main": "out/api.js",
-	"typings": "dist/vsce.d.ts",
-	"bin": {
-		"vsce": "vsce"
-	},
-	"scripts": {
-		"compile": "tsc",
-		"api": "api-extractor run --local --verbose",
-		"build": "npm run compile && npm run api",
-		"watch:build": "npm run compile -- --watch",
-		"test": "mocha",
-		"watch:test": "npm run test -- --watch"
-	},
-	"engines": {
-		"node": ">= 14"
-	},
-	"dependencies": {
-		"azure-devops-node-api": "12.1.0",
-		"chalk": "5.3.0",
-		"cheerio": "1.0.0-rc.12",
-		"commander": "11.1.0",
-		"glob": "10.3.10",
-		"hosted-git-info": "7.0.1",
-		"jsonc-parser": "3.2.0",
-		"leven": "4.0.0",
-		"markdown-it": "13.0.2",
-		"mime": "3.0.0",
-		"minimatch": "9.0.3",
-		"parse-semver": "1.1.1",
-		"read": "2.1.0",
-		"semver": "7.5.4",
-		"tmp": "0.2.1",
-		"typed-rest-client": "1.8.11",
-		"url-join": "5.0.0",
-		"xml2js": "0.6.2",
-		"yauzl": "2.10.0",
-		"yazl": "2.5.1"
-	},
-	"devDependencies": {
-		"@microsoft/api-extractor": "7.38.0",
-		"@types/cheerio": "0.22.33",
-		"@types/glob": "8.1.0",
-		"@types/hosted-git-info": "3.0.4",
-		"@types/markdown-it": "13.0.5",
-		"@types/mime": "3",
-		"@types/minimatch": "5.1.2",
-		"@types/mocha": "10.0.3",
-		"@types/node": "20.8.9",
-		"@types/read": "0.0.31",
-		"@types/semver": "7.5.4",
-		"@types/tmp": "0.2.5",
-		"@types/url-join": "4.0.2",
-		"@types/xml2js": "0.4.13",
-		"@types/yauzl": "2.10.2",
-		"@types/yazl": "2.4.4",
-		"mocha": "10.2.0",
-		"source-map-support": "0.5.21",
-		"ts-node": "10.9.1",
-		"typescript": "5.2.2"
-	},
-	"optionalDependencies": {
-		"keytar": "7.9.0"
-	},
-	"mocha": {
-		"require": [
-			"ts-node/register"
-		],
-		"watch-files": "src/**",
-		"spec": "src/test/**/*.ts"
-	}
+  "name": "@vscode/vsce",
+  "version": "0.0.1",
+  "description": "VS Code Extensions Manager",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "keywords": [
+    "vscode",
+    "vsce",
+    "extension"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Microsoft Corporation"
+  ],
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "license": "MIT",
+  "main": "out/api.js",
+  "typings": "dist/vsce.d.ts",
+  "bin": {
+    "vsce": "vsce"
+  },
+  "scripts": {
+    "compile": "tsc",
+    "api": "api-extractor run --local --verbose",
+    "build": "npm run compile && npm run api",
+    "watch:build": "npm run compile -- --watch",
+    "test": "mocha",
+    "watch:test": "npm run test -- --watch",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  },
+  "engines": {
+    "node": ">= 14"
+  },
+  "dependencies": {
+    "azure-devops-node-api": "12.1.0",
+    "chalk": "5.3.0",
+    "cheerio": "1.0.0-rc.12",
+    "commander": "11.1.0",
+    "glob": "10.3.10",
+    "hosted-git-info": "7.0.1",
+    "jsonc-parser": "3.2.0",
+    "leven": "4.0.0",
+    "markdown-it": "13.0.2",
+    "mime": "3.0.0",
+    "minimatch": "9.0.3",
+    "parse-semver": "1.1.1",
+    "read": "2.1.0",
+    "semver": "7.5.4",
+    "tmp": "0.2.1",
+    "typed-rest-client": "1.8.11",
+    "url-join": "5.0.0",
+    "xml2js": "0.6.2",
+    "yauzl": "2.10.0",
+    "yazl": "2.5.1"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "7.38.0",
+    "@types/cheerio": "0.22.33",
+    "@types/glob": "8.1.0",
+    "@types/hosted-git-info": "3.0.4",
+    "@types/markdown-it": "13.0.5",
+    "@types/mime": "3",
+    "@types/minimatch": "5.1.2",
+    "@types/mocha": "10.0.3",
+    "@types/node": "20.8.9",
+    "@types/read": "0.0.31",
+    "@types/semver": "7.5.4",
+    "@types/tmp": "0.2.5",
+    "@types/url-join": "4.0.2",
+    "@types/xml2js": "0.4.13",
+    "@types/yauzl": "2.10.2",
+    "@types/yazl": "2.4.4",
+    "mocha": "10.2.0",
+    "source-map-support": "0.5.21",
+    "ts-node": "10.9.1",
+    "typescript": "5.2.2",
+    "typescript-esbuild": "0.3.1"
+  },
+  "optionalDependencies": {
+    "keytar": "7.9.0"
+  },
+  "mocha": {
+    "require": [
+      "ts-node/register"
+    ],
+    "watch-files": "src/**",
+    "spec": "src/test/**/*.ts"
+  },
+  "type": "module",
+  "private": "false"
 }

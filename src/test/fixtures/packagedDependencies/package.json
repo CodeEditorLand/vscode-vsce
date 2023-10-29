@@ -1,12 +1,37 @@
 {
-	"name": "root-test-package",
-	"publisher": "jrieken",
-	"version": "1.0.0",
-	"engines": {
-		"vscode": "*"
-	},
-	"dependencies": {
-		"isexe": "3.1.1",
-		"which": "4.0.0"
-	}
+  "name": "root-test-package",
+  "publisher": "jrieken",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "*"
+  },
+  "dependencies": {
+    "isexe": "3.1.1",
+    "which": "4.0.0"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }
