@@ -2,76 +2,31 @@
 	"name": "node-debug",
 	"displayName": "Node Debug",
 	"version": "1.6.2",
-	"publisher": "ms-vscode",
+	"private": true,
 	"description": "%extension.description%",
 	"categories": [
 		"Debuggers"
 	],
-	"author": {
-		"name": "Microsoft Corporation"
-	},
-	"license": "MIT",
-	"private": true,
-	"scripts": {
-		"prepublish": "node ./node_modules/gulp/bin/gulp.js build",
-		"build": "node ./node_modules/gulp/bin/gulp.js build",
-		"test": "node ./node_modules/mocha/bin/mocha --timeout 10000 -u tdd ./out/tests/",
-		"nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
-		"postinstall": "node ./node_modules/vscode/bin/install"
-	},
-	"engines": {
-		"vscode": "^1.6.0",
-		"node": "^5.10.0"
-	},
-	"dependencies": {
-		"vscode-debugprotocol": "^1.13.0-pre.5",
-		"vscode-debugadapter": "^1.13.0-pre.4",
-		"source-map": "^0.5.3",
-		"vscode-nls": "^2.0.0",
-		"request-light": "^0.1.0",
-		"glob": "^7.0.6"
+	"bugs": {
+		"url": "https://github.com/Microsoft/vscode-node-debug/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-node-debug.git"
 	},
-	"bugs": {
-		"url": "https://github.com/Microsoft/vscode-node-debug/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Microsoft Corporation"
 	},
-	"devDependencies": {
-		"@types/es6-collections": "^0.5.29",
-		"@types/es6-promise": "0.0.32",
-		"@types/mocha": "^2.2.32",
-		"@types/node": "^6.0.39",
-		"@types/source-map": "^0.1.27",
-		"gulp": "^3.9.1",
-		"gulp-util": "^3.0.7",
-		"gulp-typescript": "^2.14.0",
-		"gulp-tsb": "^2.0.0",
-		"gulp-sourcemaps": "^1.6.0",
-		"gulp-filter": "^3.0.1",
-		"gulp-azure-storage": "*",
-		"gulp-tslint": "^6.1.1",
-		"gulp-uglify": "^2.0.0",
-		"tslint-microsoft-contrib": "^2.0.10",
-		"git-rev-sync": "*",
-		"del": "*",
-		"run-sequence": "*",
-		"gulp-vinyl-zip": "*",
-		"mocha": "^2.4.5",
-		"tslint": "^3.15.1",
-		"typescript": "^2.0.2",
-		"vscode": "^0.11.18",
-		"vscode-nls-dev": "^2.0.0-beta.1",
-		"vscode-debugadapter-testsupport": "^1.13.0-pre.3",
-		"nodemon": "^1.10.2",
-		"vsce": "^1.12.0"
-	},
+	"publisher": "ms-vscode",
 	"main": "./out/node/extension",
-	"activationEvents": [
-		"onCommand:extension.pickNodeProcess",
-		"onCommand:extension.provideInitialConfigurations"
-	],
+	"scripts": {
+		"build": "node ./node_modules/gulp/bin/gulp.js build",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
+		"prepublish": "node ./node_modules/gulp/bin/gulp.js build",
+		"test": "node ./node_modules/mocha/bin/mocha --timeout 10000 -u tdd ./out/tests/"
+	},
 	"contributes": {
 		"breakpoints": [
 			{
@@ -363,5 +318,50 @@
 				}
 			}
 		]
+	},
+	"activationEvents": [
+		"onCommand:extension.pickNodeProcess",
+		"onCommand:extension.provideInitialConfigurations"
+	],
+	"dependencies": {
+		"glob": "10.3.10",
+		"request-light": "0.7.0",
+		"source-map": "0.7.4",
+		"vscode-debugadapter": "1.51.0-pre.0",
+		"vscode-debugprotocol": "1.51.0-pre.0",
+		"vscode-nls": "5.2.0"
+	},
+	"devDependencies": {
+		"@types/es6-collections": "0.5.36",
+		"@types/es6-promise": "0.0.33",
+		"@types/mocha": "10.0.4",
+		"@types/node": "20.9.0",
+		"@types/source-map": "0.5.2",
+		"del": "*",
+		"git-rev-sync": "*",
+		"gulp": "4.0.2",
+		"gulp-azure-storage": "*",
+		"gulp-filter": "9.0.0",
+		"gulp-sourcemaps": "3.0.0",
+		"gulp-tsb": "2.0.0",
+		"gulp-tslint": "8.1.4",
+		"gulp-typescript": "5.0.1",
+		"gulp-uglify": "3.0.2",
+		"gulp-util": "3.0.7",
+		"gulp-vinyl-zip": "*",
+		"mocha": "10.2.0",
+		"nodemon": "3.0.1",
+		"run-sequence": "*",
+		"tslint": "5.20.1",
+		"tslint-microsoft-contrib": "2.0.10",
+		"typescript": "5.2.2",
+		"vsce": "1.12.0",
+		"vscode": "0.11.18",
+		"vscode-debugadapter-testsupport": "1.51.0-pre.0",
+		"vscode-nls-dev": "4.0.4"
+	},
+	"engines": {
+		"node": "5.10.0",
+		"vscode": "1.6.0"
 	}
 }

@@ -1,9 +1,9 @@
 {
 	"name": "version",
-	"publisher": "joaomoreno",
 	"version": "1.0.0",
-	"icon": "./icon.png",
+	"publisher": "joaomoreno",
 	"engines": {
 		"vscode": "*"
-	}
+	},
+	"icon": "./icon.png"
 }

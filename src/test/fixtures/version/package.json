@@ -1,7 +1,7 @@
 {
 	"name": "version",
-	"publisher": "felipecrs",
 	"version": "1.0.0",
+	"publisher": "felipecrs",
 	"engines": {
 		"vscode": "*"
 	}
