@@ -1,29 +1,29 @@
-import * as fs from "fs";
-import * as path from "path";
-import { promisify } from "util";
-import * as cp from "child_process";
-import * as yazl from "yazl";
-import { ExtensionKind, Manifest } from "./manifest";
-import { ITranslations, patchNLS } from "./nls";
-import * as util from "./util";
-import glob from "glob";
-import minimatch from "minimatch";
-import markdownit from "markdown-it";
-import * as cheerio from "cheerio";
-import * as url from "url";
-import mime from "mime";
-import * as semver from "semver";
-import urljoin from "url-join";
+import * as fs from 'fs';
+import * as path from 'path';
+import { promisify } from 'util';
+import * as cp from 'child_process';
+import * as yazl from 'yazl';
+import { ExtensionKind, Manifest } from './manifest';
+import { ITranslations, patchNLS } from './nls';
+import * as util from './util';
+import glob from 'glob';
+import minimatch from 'minimatch';
+import markdownit from 'markdown-it';
+import * as cheerio from 'cheerio';
+import * as url from 'url';
+import mime from 'mime';
+import * as semver from 'semver';
+import urljoin from 'url-join';
 import {
 	validateExtensionName,
 	validateVersion,
 	validateEngineCompatibility,
 	validateVSCodeTypesCompatibility,
-} from "./validation";
-import { detectYarn, getDependencies } from "./npm";
-import * as GitHost from "hosted-git-info";
-import parseSemver from "parse-semver";
-import * as jsonc from "jsonc-parser";
+} from './validation';
+import { detectYarn, getDependencies } from './npm';
+import * as GitHost from 'hosted-git-info';
+import parseSemver from 'parse-semver';
+import * as jsonc from 'jsonc-parser';
 
 const MinimatchOptions: minimatch.IOptions = { dot: true };
 
@@ -47,11 +47,9 @@ function isInMemoryFile(file: IFile): file is IInMemoryFile {
 
 export function read(file: IFile): Promise<string> {
 	if (isInMemoryFile(file)) {
-		return Promise.resolve(file.contents).then((b) =>
-			typeof b === "string" ? b : b.toString("utf8")
-		);
+		return Promise.resolve(file.contents).then(b => (typeof b === 'string' ? b : b.toString('utf8')));
 	} else {
-		return fs.promises.readFile(file.localPath, "utf8");
+		return fs.promises.readFile(file.localPath, 'utf8');
 	}
 }
 
@@ -169,11 +167,11 @@ export interface VSIX {
 		homepage?: string;
 		github?: string;
 	};
-	galleryBanner: NonNullable<Manifest["galleryBanner"]>;
-	badges?: Manifest["badges"];
+	galleryBanner: NonNullable<Manifest['galleryBanner']>;
+	badges?: Manifest['badges'];
 	githubMarkdown: boolean;
 	enableMarketplaceQnA?: boolean;
-	customerQnALink?: Manifest["qna"];
+	customerQnALink?: Manifest['qna'];
 	extensionDependencies: string;
 	extensionPack: string;
 	extensionKind: string;
@@ -184,7 +182,7 @@ export interface VSIX {
 }
 
 export class BaseProcessor implements IProcessor {
-	constructor(protected manifest: Manifest) {}
+	constructor(protected manifest: Manifest) { }
 	assets: IAsset[] = [];
 	tags: string[] = [];
 	vsix: VSIX = Object.create(null);
@@ -203,10 +201,7 @@ function getGitHost(manifest: Manifest): GitHost | undefined {
 }
 
 // https://github.com/npm/cli/blob/latest/lib/repo.js
-function getRepositoryUrl(
-	manifest: Manifest,
-	gitHost?: GitHost | null
-): string | undefined {
+function getRepositoryUrl(manifest: Manifest, gitHost?: GitHost | null): string | undefined {
 	if (gitHost) {
 		return gitHost.https();
 	}
@@ -214,12 +209,12 @@ function getRepositoryUrl(
 	let url: string | undefined = undefined;
 
 	if (manifest.repository) {
-		if (typeof manifest.repository === "string") {
+		if (typeof manifest.repository === 'string') {
 			url = manifest.repository;
 		} else if (
-			typeof manifest.repository === "object" &&
+			typeof manifest.repository === 'object' &&
 			manifest.repository.url &&
-			typeof manifest.repository.url === "string"
+			typeof manifest.repository.url === 'string'
 		) {
 			url = manifest.repository.url;
 		}
@@ -229,18 +224,15 @@ function getRepositoryUrl(
 }
 
 // https://github.com/npm/cli/blob/latest/lib/bugs.js
-function getBugsUrl(
-	manifest: Manifest,
-	gitHost: GitHost | undefined
-): string | undefined {
+function getBugsUrl(manifest: Manifest, gitHost: GitHost | undefined): string | undefined {
 	if (manifest.bugs) {
-		if (typeof manifest.bugs === "string") {
+		if (typeof manifest.bugs === 'string') {
 			return manifest.bugs;
 		}
-		if (typeof manifest.bugs === "object" && manifest.bugs.url) {
+		if (typeof manifest.bugs === 'object' && manifest.bugs.url) {
 			return manifest.bugs.url;
 		}
-		if (typeof manifest.bugs === "object" && manifest.bugs.email) {
+		if (typeof manifest.bugs === 'object' && manifest.bugs.email) {
 			return `mailto:${manifest.bugs.email}`;
 		}
 	}
@@ -253,10 +245,7 @@ function getBugsUrl(
 }
 
 // https://github.com/npm/cli/blob/latest/lib/docs.js
-function getHomepageUrl(
-	manifest: Manifest,
-	gitHost: GitHost | undefined
-): string | undefined {
+function getHomepageUrl(manifest: Manifest, gitHost: GitHost | undefined): string | undefined {
 	if (manifest.homepage) {
 		return manifest.homepage;
 	}
@@ -271,20 +260,17 @@ function getHomepageUrl(
 // Contributed by Mozilla developer authors
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
 function escapeRegExp(value: string) {
-	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
 function toExtensionTags(extensions: string[]): string[] {
 	return extensions
-		.map((s) => s.replace(/\W/g, ""))
-		.filter((s) => !!s)
-		.map((s) => `__ext_${s}`);
+		.map(s => s.replace(/\W/g, ''))
+		.filter(s => !!s)
+		.map(s => `__ext_${s}`);
 }
 
-function toLanguagePackTags(
-	translations: { id: string }[],
-	languageId: string
-): string[] {
+function toLanguagePackTags(translations: { id: string }[], languageId: string): string[] {
 	return (translations ?? [])
 		.map(({ id }) => [`__lp_${id}`, `__lp-${languageId}_${id}`])
 		.reduce((r, t) => [...r, ...t], []);
@@ -294,69 +280,64 @@ function toLanguagePackTags(
  * Remember to reach out to them when adding new domains.
  */
 const TrustedSVGSources = [
-	"api.bintray.com",
-	"api.travis-ci.com",
-	"api.travis-ci.org",
-	"app.fossa.io",
-	"badge.buildkite.com",
-	"badge.fury.io",
-	"badge.waffle.io",
-	"badgen.net",
-	"badges.frapsoft.com",
-	"badges.gitter.im",
-	"badges.greenkeeper.io",
-	"cdn.travis-ci.com",
-	"cdn.travis-ci.org",
-	"ci.appveyor.com",
-	"circleci.com",
-	"cla.opensource.microsoft.com",
-	"codacy.com",
-	"codeclimate.com",
-	"codecov.io",
-	"coveralls.io",
-	"david-dm.org",
-	"deepscan.io",
-	"dev.azure.com",
-	"docs.rs",
-	"flat.badgen.net",
-	"gemnasium.com",
-	"githost.io",
-	"gitlab.com",
-	"godoc.org",
-	"goreportcard.com",
-	"img.shields.io",
-	"isitmaintained.com",
-	"marketplace.visualstudio.com",
-	"nodesecurity.io",
-	"opencollective.com",
-	"snyk.io",
-	"travis-ci.com",
-	"travis-ci.org",
-	"visualstudio.com",
-	"vsmarketplacebadges.dev",
-	"www.bithound.io",
-	"www.versioneye.com",
+	'api.bintray.com',
+	'api.travis-ci.com',
+	'api.travis-ci.org',
+	'app.fossa.io',
+	'badge.buildkite.com',
+	'badge.fury.io',
+	'badge.waffle.io',
+	'badgen.net',
+	'badges.frapsoft.com',
+	'badges.gitter.im',
+	'badges.greenkeeper.io',
+	'cdn.travis-ci.com',
+	'cdn.travis-ci.org',
+	'ci.appveyor.com',
+	'circleci.com',
+	'cla.opensource.microsoft.com',
+	'codacy.com',
+	'codeclimate.com',
+	'codecov.io',
+	'coveralls.io',
+	'david-dm.org',
+	'deepscan.io',
+	'dev.azure.com',
+	'docs.rs',
+	'flat.badgen.net',
+	'gemnasium.com',
+	'githost.io',
+	'gitlab.com',
+	'godoc.org',
+	'goreportcard.com',
+	'img.shields.io',
+	'isitmaintained.com',
+	'marketplace.visualstudio.com',
+	'nodesecurity.io',
+	'opencollective.com',
+	'snyk.io',
+	'travis-ci.com',
+	'travis-ci.org',
+	'visualstudio.com',
+	'vsmarketplacebadges.dev',
+	'www.bithound.io',
+	'www.versioneye.com',
 ];
 
 function isGitHubRepository(repository: string | undefined): boolean {
-	return /^https:\/\/github\.com\/|^git@github\.com:/.test(repository ?? "");
+	return /^https:\/\/github\.com\/|^git@github\.com:/.test(repository ?? '');
 }
 
 function isGitLabRepository(repository: string | undefined): boolean {
-	return /^https:\/\/gitlab\.com\/|^git@gitlab\.com:/.test(repository ?? "");
+	return /^https:\/\/gitlab\.com\/|^git@gitlab\.com:/.test(repository ?? '');
 }
 
 function isGitHubBadge(href: string): boolean {
-	return /^https:\/\/github\.com\/[^/]+\/[^/]+\/(actions\/)?workflows\/.*badge\.svg/.test(
-		href || ""
-	);
+	return /^https:\/\/github\.com\/[^/]+\/[^/]+\/(actions\/)?workflows\/.*badge\.svg/.test(href || '');
 }
 
 function isHostTrusted(url: url.URL): boolean {
-	return (
-		(url.host && TrustedSVGSources.indexOf(url.host.toLowerCase()) > -1) ||
-		isGitHubBadge(url.href)
-	);
+	return (url.host && TrustedSVGSources.indexOf(url.host.toLowerCase()) > -1) || isGitHubBadge(url.href);
 }
 
 export interface IVersionBumpOptions {
@@ -384,15 +365,15 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 	}
 
 	switch (options.version) {
-		case "major":
-		case "minor":
-		case "patch":
+		case 'major':
+		case 'minor':
+		case 'patch':
 			break;
-		case "premajor":
-		case "preminor":
-		case "prepatch":
-		case "prerelease":
-		case "from-git":
+		case 'premajor':
+		case 'preminor':
+		case 'prepatch':
+		case 'prerelease':
+		case 'from-git':
 			return Promise.reject(`Not supported: ${options.version}`);
 		default:
 			if (!semver.valid(options.version)) {
@@ -401,52 +382,45 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 	}
 
 	// call `npm version` to do our dirty work
-	const args = ["version", options.version];
+	const args = ['version', options.version];
 
 	if (options.commitMessage) {
-		args.push("-m", options.commitMessage);
+		args.push('-m', options.commitMessage);
 	}
 
 	if (!(options.gitTagVersion ?? true)) {
-		args.push("--no-git-tag-version");
+		args.push('--no-git-tag-version');
 	}
 
-	const { stdout, stderr } = await promisify(cp.execFile)(
-		process.platform === "win32" ? "npm.cmd" : "npm",
-		args,
-		{ cwd }
-	);
+	const { stdout, stderr } = await promisify(cp.execFile)(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd });
 
-	if (!process.env["VSCE_TESTS"]) {
+	if (!process.env['VSCE_TESTS']) {
 		process.stdout.write(stdout);
 		process.stderr.write(stderr);
 	}
 }
 
 export const Targets = new Set([
-	"win32-x64",
-	"win32-arm64",
-	"linux-x64",
-	"linux-arm64",
-	"linux-armhf",
-	"darwin-x64",
-	"darwin-arm64",
-	"alpine-x64",
-	"alpine-arm64",
-	"web",
+	'win32-x64',
+	'win32-arm64',
+	'linux-x64',
+	'linux-arm64',
+	'linux-armhf',
+	'darwin-x64',
+	'darwin-arm64',
+	'alpine-x64',
+	'alpine-arm64',
+	'web',
 ]);
 
 export class ManifestProcessor extends BaseProcessor {
-	constructor(
-		manifest: Manifest,
-		private readonly options: IPackageOptions = {}
-	) {
+	constructor(manifest: Manifest, private readonly options: IPackageOptions = {}) {
 		super(manifest);
 
-		const flags = ["Public"];
+		const flags = ['Public'];
 
 		if (manifest.preview) {
-			flags.push("Preview");
+			flags.push('Preview');
 		}
 
 		const gitHost = getGitHost(manifest);
@@ -456,9 +430,9 @@ export class ManifestProcessor extends BaseProcessor {
 		let enableMarketplaceQnA: boolean | undefined;
 		let customerQnALink: string | undefined;
 
-		if (manifest.qna === "marketplace") {
+		if (manifest.qna === 'marketplace') {
 			enableMarketplaceQnA = true;
-		} else if (typeof manifest.qna === "string") {
+		} else if (typeof manifest.qna === 'string') {
 			customerQnALink = manifest.qna;
 		} else if (manifest.qna === false) {
 			enableMarketplaceQnA = false;
@@ -472,43 +446,27 @@ export class ManifestProcessor extends BaseProcessor {
 			let engineVersion: string;
 
 			try {
-				const engineSemver = parseSemver(
-					`vscode@${manifest.engines["vscode"]}`
-				);
+				const engineSemver = parseSemver(`vscode@${manifest.engines['vscode']}`);
 				engineVersion = engineSemver.version;
 			} catch (err) {
-				throw new Error("Failed to parse semver of engines.vscode");
+				throw new Error('Failed to parse semver of engines.vscode');
 			}
 
 			if (target) {
-				if (
-					engineVersion !== "latest" &&
-					!semver.satisfies(engineVersion, ">=1.61", {
-						includePrerelease: true,
-					})
-				) {
+				if (engineVersion !== 'latest' && !semver.satisfies(engineVersion, '>=1.61', { includePrerelease: true })) {
 					throw new Error(
-						`Platform specific extension is supported by VS Code >=1.61. Current 'engines.vscode' is '${manifest.engines["vscode"]}'.`
+						`Platform specific extension is supported by VS Code >=1.61. Current 'engines.vscode' is '${manifest.engines['vscode']}'.`
 					);
 				}
 				if (!Targets.has(target)) {
-					throw new Error(
-						`'${target}' is not a valid VS Code target. Valid targets: ${[
-							...Targets,
-						].join(", ")}`
-					);
+					throw new Error(`'${target}' is not a valid VS Code target. Valid targets: ${[...Targets].join(', ')}`);
 				}
 			}
 
 			if (preRelease) {
-				if (
-					engineVersion !== "latest" &&
-					!semver.satisfies(engineVersion, ">=1.63", {
-						includePrerelease: true,
-					})
-				) {
+				if (engineVersion !== 'latest' && !semver.satisfies(engineVersion, '>=1.63', { includePrerelease: true })) {
 					throw new Error(
-						`Pre-release versions are supported by VS Code >=1.63. Current 'engines.vscode' is '${manifest.engines["vscode"]}'.`
+						`Pre-release versions are supported by VS Code >=1.63. Current 'engines.vscode' is '${manifest.engines['vscode']}'.`
 					);
 				}
 			}
@@ -518,17 +476,14 @@ export class ManifestProcessor extends BaseProcessor {
 			...this.vsix,
 			id: manifest.name,
 			displayName: manifest.displayName ?? manifest.name,
-			version:
-				options.version && !(options.updatePackageJson ?? true)
-					? options.version
-					: manifest.version,
+			version: options.version && !(options.updatePackageJson ?? true) ? options.version : manifest.version,
 			publisher: manifest.publisher,
 			target,
-			engine: manifest.engines["vscode"],
-			description: manifest.description ?? "",
-			pricing: manifest.pricing ?? "Free",
-			categories: (manifest.categories ?? []).join(","),
-			flags: flags.join(" "),
+			engine: manifest.engines['vscode'],
+			description: manifest.description ?? '',
+			pricing: manifest.pricing ?? 'Free',
+			categories: (manifest.categories ?? []).join(','),
+			flags: flags.join(' '),
 			links: {
 				repository,
 				bugs: getBugsUrl(manifest, gitHost),
@@ -536,27 +491,20 @@ export class ManifestProcessor extends BaseProcessor {
 			},
 			galleryBanner: manifest.galleryBanner ?? {},
 			badges: manifest.badges,
-			githubMarkdown: manifest.markdown !== "standard",
+			githubMarkdown: manifest.markdown !== 'standard',
 			enableMarketplaceQnA,
 			customerQnALink,
-			extensionDependencies: [
-				...new Set(manifest.extensionDependencies ?? []),
-			].join(","),
-			extensionPack: [...new Set(manifest.extensionPack ?? [])].join(","),
-			extensionKind: extensionKind.join(","),
+			extensionDependencies: [...new Set(manifest.extensionDependencies ?? [])].join(','),
+			extensionPack: [...new Set(manifest.extensionPack ?? [])].join(','),
+			extensionKind: extensionKind.join(','),
 			localizedLanguages:
 				manifest.contributes && manifest.contributes.localizations
 					? manifest.contributes.localizations
-							.map(
-								(loc) =>
-									loc.localizedLanguageName ??
-									loc.languageName ??
-									loc.languageId
-							)
-							.join(",")
-					: "",
+						.map(loc => loc.localizedLanguageName ?? loc.languageName ?? loc.languageId)
+						.join(',')
+					: '',
 			preRelease: !!this.options.preRelease,
-			sponsorLink: manifest.sponsor?.url || "",
+			sponsorLink: manifest.sponsor?.url || '',
 		};
 
 		if (isGitHub) {
@@ -575,10 +523,7 @@ export class ManifestProcessor extends BaseProcessor {
 			const contents = await read(file);
 			const packageJson = JSON.parse(contents);
 			packageJson.version = this.options.version;
-			file = {
-				...file,
-				contents: JSON.stringify(packageJson, undefined, 2),
-			};
+			file = { ...file, contents: JSON.stringify(packageJson, undefined, 2) };
 		}
 
 		// Ensure that package.json is writable as VS Code needs to
@@ -587,42 +532,33 @@ export class ManifestProcessor extends BaseProcessor {
 	}
 
 	async onEnd(): Promise<void> {
-		if (typeof this.manifest.extensionKind === "string") {
+		if (typeof this.manifest.extensionKind === 'string') {
 			util.log.warn(
 				`The 'extensionKind' property should be of type 'string[]'. Learn more at: https://aka.ms/vscode/api/incorrect-execution-location`
 			);
 		}
 
-		if (this.manifest.publisher === "vscode-samples") {
+		if (this.manifest.publisher === 'vscode-samples') {
 			throw new Error(
 				"It's not allowed to use the 'vscode-samples' publisher. Learn more at: https://code.visualstudio.com/api/working-with-extensions/publishing-extension."
 			);
 		}
 
 		if (!this.options.allowMissingRepository && !this.manifest.repository) {
-			util.log.warn(
-				`A 'repository' field is missing from the 'package.json' manifest file.`
-			);
+			util.log.warn(`A 'repository' field is missing from the 'package.json' manifest file.`);
 
-			if (
-				!/^y$/i.test(await util.read("Do you want to continue? [y/N] "))
-			) {
-				throw new Error("Aborted");
+			if (!/^y$/i.test(await util.read('Do you want to continue? [y/N] '))) {
+				throw new Error('Aborted');
 			}
 		}
 
-		if (
-			!this.options.allowStarActivation &&
-			this.manifest.activationEvents?.some((e) => e === "*")
-		) {
+		if (!this.options.allowStarActivation && this.manifest.activationEvents?.some(e => e === '*')) {
 			util.log.warn(
 				`Using '*' activation is usually a bad idea as it impacts performance.\nMore info: https://code.visualstudio.com/api/references/activation-events#Start-up`
 			);
 
-			if (
-				!/^y$/i.test(await util.read("Do you want to continue? [y/N] "))
-			) {
-				throw new Error("Aborted");
+			if (!/^y$/i.test(await util.read('Do you want to continue? [y/N] '))) {
+				throw new Error('Aborted');
 			}
 		}
 	}
@@ -630,42 +566,42 @@ export class ManifestProcessor extends BaseProcessor {
 
 export class TagsProcessor extends BaseProcessor {
 	private static Keywords: Record<string, string[]> = {
-		git: ["git"],
-		npm: ["node"],
-		spell: ["markdown"],
-		bootstrap: ["bootstrap"],
-		lint: ["linters"],
-		linting: ["linters"],
-		react: ["javascript"],
-		js: ["javascript"],
-		node: ["javascript", "node"],
-		"c++": ["c++"],
-		Cplusplus: ["c++"],
-		xml: ["xml"],
-		angular: ["javascript"],
-		jquery: ["javascript"],
-		php: ["php"],
-		python: ["python"],
-		latex: ["latex"],
-		ruby: ["ruby"],
-		java: ["java"],
-		erlang: ["erlang"],
-		sql: ["sql"],
-		nodejs: ["node"],
-		"c#": ["c#"],
-		css: ["css"],
-		javascript: ["javascript"],
-		ftp: ["ftp"],
-		haskell: ["haskell"],
-		unity: ["unity"],
-		terminal: ["terminal"],
-		powershell: ["powershell"],
-		laravel: ["laravel"],
-		meteor: ["meteor"],
-		emmet: ["emmet"],
-		eslint: ["linters"],
-		tfs: ["tfs"],
-		rust: ["rust"],
+		git: ['git'],
+		npm: ['node'],
+		spell: ['markdown'],
+		bootstrap: ['bootstrap'],
+		lint: ['linters'],
+		linting: ['linters'],
+		react: ['javascript'],
+		js: ['javascript'],
+		node: ['javascript', 'node'],
+		'c++': ['c++'],
+		Cplusplus: ['c++'],
+		xml: ['xml'],
+		angular: ['javascript'],
+		jquery: ['javascript'],
+		php: ['php'],
+		python: ['python'],
+		latex: ['latex'],
+		ruby: ['ruby'],
+		java: ['java'],
+		erlang: ['erlang'],
+		sql: ['sql'],
+		nodejs: ['node'],
+		'c#': ['c#'],
+		css: ['css'],
+		javascript: ['javascript'],
+		ftp: ['ftp'],
+		haskell: ['haskell'],
+		unity: ['unity'],
+		terminal: ['terminal'],
+		powershell: ['powershell'],
+		laravel: ['laravel'],
+		meteor: ['meteor'],
+		emmet: ['emmet'],
+		eslint: ['linters'],
+		tfs: ['tfs'],
+		rust: ['rust'],
 	};
 
 	async onEnd(): Promise<void> {
@@ -683,81 +619,43 @@ export class TagsProcessor extends BaseProcessor {
 			return obj && obj.length > 0;
 		};
 
-		const colorThemes = doesContribute("themes")
-			? ["theme", "color-theme"]
-			: [];
-		const iconThemes = doesContribute("iconThemes")
-			? ["theme", "icon-theme"]
-			: [];
-		const productIconThemes = doesContribute("productIconThemes")
-			? ["theme", "product-icon-theme"]
-			: [];
-		const snippets = doesContribute("snippets") ? ["snippet"] : [];
-		const keybindings = doesContribute("keybindings")
-			? ["keybindings"]
-			: [];
-		const debuggers = doesContribute("debuggers") ? ["debuggers"] : [];
-		const json = doesContribute("jsonValidation") ? ["json"] : [];
-		const remoteMenu = doesContribute("menus", "statusBar/remoteIndicator")
-			? ["remote-menu"]
-			: [];
+		const colorThemes = doesContribute('themes') ? ['theme', 'color-theme'] : [];
+		const iconThemes = doesContribute('iconThemes') ? ['theme', 'icon-theme'] : [];
+		const productIconThemes = doesContribute('productIconThemes') ? ['theme', 'product-icon-theme'] : [];
+		const snippets = doesContribute('snippets') ? ['snippet'] : [];
+		const keybindings = doesContribute('keybindings') ? ['keybindings'] : [];
+		const debuggers = doesContribute('debuggers') ? ['debuggers'] : [];
+		const json = doesContribute('jsonValidation') ? ['json'] : [];
+		const remoteMenu = doesContribute('menus', 'statusBar/remoteIndicator') ? ['remote-menu'] : [];
 
-		const localizationContributions = (
-			(contributes && contributes["localizations"]) ??
-			[]
-		).reduce<string[]>(
-			(r, l) => [
-				...r,
-				`lp-${l.languageId}`,
-				...toLanguagePackTags(l.translations, l.languageId),
-			],
+		const localizationContributions = ((contributes && contributes['localizations']) ?? []).reduce<string[]>(
+			(r, l) => [...r, `lp-${l.languageId}`, ...toLanguagePackTags(l.translations, l.languageId)],
 			[]
 		);
 
-		const languageContributions = (
-			(contributes && contributes["languages"]) ??
-			[]
-		).reduce<string[]>(
-			(r, l) => [
-				...r,
-				l.id,
-				...(l.aliases ?? []),
-				...toExtensionTags(l.extensions ?? []),
-			],
+		const languageContributions = ((contributes && contributes['languages']) ?? []).reduce<string[]>(
+			(r, l) => [...r, l.id, ...(l.aliases ?? []), ...toExtensionTags(l.extensions ?? [])],
 			[]
 		);
 
 		const languageActivations = activationEvents
-			.map((e) => /^onLanguage:(.*)$/.exec(e))
+			.map(e => /^onLanguage:(.*)$/.exec(e))
 			.filter(util.nonnull)
-			.map((r) => r[1]);
+			.map(r => r[1]);
 
-		const grammars = ((contributes && contributes["grammars"]) ?? []).map(
-			(g) => g.language
-		);
+		const grammars = ((contributes && contributes['grammars']) ?? []).map(g => g.language);
 
-		const description = this.manifest.description || "";
-		const descriptionKeywords = Object.keys(TagsProcessor.Keywords).reduce<
-			string[]
-		>(
+		const description = this.manifest.description || '';
+		const descriptionKeywords = Object.keys(TagsProcessor.Keywords).reduce<string[]>(
 			(r, k) =>
 				r.concat(
-					new RegExp(
-						"\\b(?:" + escapeRegExp(k) + ")(?!\\w)",
-						"gi"
-					).test(description)
-						? TagsProcessor.Keywords[k]
-						: []
+					new RegExp('\\b(?:' + escapeRegExp(k) + ')(?!\\w)', 'gi').test(description) ? TagsProcessor.Keywords[k] : []
 				),
 			[]
 		);
 
-		const webExtensionTags = isWebKind(this.manifest)
-			? ["__web_extension"]
-			: [];
-		const sponsorTags = this.manifest.sponsor?.url
-			? ["__sponsor_extension"]
-			: [];
+		const webExtensionTags = isWebKind(this.manifest) ? ['__web_extension'] : [];
+		const sponsorTags = this.manifest.sponsor?.url ? ['__sponsor_extension'] : [];
 
 		const tags = new Set([
 			...keywords,
@@ -778,7 +676,7 @@ export class TagsProcessor extends BaseProcessor {
 			...sponsorTags,
 		]);
 
-		this.tags = [...tags].filter((tag) => !!tag);
+		this.tags = [...tags].filter(tag => !!tag);
 	}
 }
 
@@ -801,28 +699,16 @@ export class MarkdownProcessor extends BaseProcessor {
 	) {
 		super(manifest);
 
-		const guess = this.guessBaseUrls(
-			options.githubBranch || options.gitlabBranch
-		);
+		const guess = this.guessBaseUrls(options.githubBranch || options.gitlabBranch);
 
-		this.baseContentUrl =
-			options.baseContentUrl || (guess && guess.content);
-		this.baseImagesUrl =
-			options.baseImagesUrl ||
-			options.baseContentUrl ||
-			(guess && guess.images);
+		this.baseContentUrl = options.baseContentUrl || (guess && guess.content);
+		this.baseImagesUrl = options.baseImagesUrl || options.baseContentUrl || (guess && guess.images);
 		this.rewriteRelativeLinks = options.rewriteRelativeLinks ?? true;
 		this.repositoryUrl = guess && guess.repository;
 		this.isGitHub = isGitHubRepository(this.repositoryUrl);
 		this.isGitLab = isGitLabRepository(this.repositoryUrl);
-		this.gitHubIssueLinking =
-			typeof options.gitHubIssueLinking === "boolean"
-				? options.gitHubIssueLinking
-				: true;
-		this.gitLabIssueLinking =
-			typeof options.gitLabIssueLinking === "boolean"
-				? options.gitLabIssueLinking
-				: true;
+		this.gitHubIssueLinking = typeof options.gitHubIssueLinking === 'boolean' ? options.gitHubIssueLinking : true;
+		this.gitLabIssueLinking = typeof options.gitLabIssueLinking === 'boolean' ? options.gitLabIssueLinking : true;
 	}
 
 	async onFile(file: IFile): Promise<IFile> {
@@ -837,29 +723,20 @@ export class MarkdownProcessor extends BaseProcessor {
 		let contents = await read(file);
 
 		if (/This is the README for your extension /.test(contents)) {
-			throw new Error(
-				`It seems the README.md still contains template text. Make sure to edit the README.md file before you package or publish your extension.`
-			);
+			throw new Error(`It seems the README.md still contains template text. Make sure to edit the README.md file before you package or publish your extension.`);
 		}
 
 		if (this.rewriteRelativeLinks) {
-			const markdownPathRegex =
-				/(!?)\[([^\]\[]*|!\[[^\]\[]*]\([^\)]+\))\]\(([^\)]+)\)/g;
-			const urlReplace = (
-				_: string,
-				isImage: string,
-				title: string,
-				link: string
-			) => {
+			const markdownPathRegex = /(!?)\[([^\]\[]*|!\[[^\]\[]*]\([^\)]+\))\]\(([^\)]+)\)/g;
+			const urlReplace = (_: string, isImage: string, title: string, link: string) => {
 				if (/^mailto:/i.test(link)) {
 					return `${isImage}[${title}](${link})`;
 				}
 
-				const isLinkRelative =
-					!/^\w+:\/\//.test(link) && link[0] !== "#";
+				const isLinkRelative = !/^\w+:\/\//.test(link) && link[0] !== '#';
 
 				if (!this.baseContentUrl && !this.baseImagesUrl) {
-					const asset = isImage ? "image" : "link";
+					const asset = isImage ? 'image' : 'link';
 
 					if (isLinkRelative) {
 						throw new Error(
@@ -869,54 +746,38 @@ export class MarkdownProcessor extends BaseProcessor {
 				}
 
 				title = title.replace(markdownPathRegex, urlReplace);
-				const prefix = isImage
-					? this.baseImagesUrl
-					: this.baseContentUrl;
+				const prefix = isImage ? this.baseImagesUrl : this.baseContentUrl;
 
 				if (!prefix || !isLinkRelative) {
 					return `${isImage}[${title}](${link})`;
 				}
 
-				return `${isImage}[${title}](${urljoin(
-					prefix,
-					path.posix.normalize(link)
-				)})`;
+				return `${isImage}[${title}](${urljoin(prefix, path.posix.normalize(link))})`;
 			};
 
 			// Replace Markdown links with urls
 			contents = contents.replace(markdownPathRegex, urlReplace);
 
 			// Replace <img> links with urls
-			contents = contents.replace(
-				/<img.+?src=["']([/.\w\s#-]+)['"].*?>/g,
-				(all, link) => {
-					const isLinkRelative =
-						!/^\w+:\/\//.test(link) && link[0] !== "#";
+			contents = contents.replace(/<img.+?src=["']([/.\w\s#-]+)['"].*?>/g, (all, link) => {
+				const isLinkRelative = !/^\w+:\/\//.test(link) && link[0] !== '#';
 
-					if (!this.baseImagesUrl && isLinkRelative) {
-						throw new Error(
-							`Couldn't detect the repository where this extension is published. The image will be broken in ${this.name}. GitHub/GitLab repositories will be automatically detected. Otherwise, please provide the repository URL in package.json or use the --baseContentUrl and --baseImagesUrl options.`
-						);
-					}
-					const prefix = this.baseImagesUrl;
-
-					if (!prefix || !isLinkRelative) {
-						return all;
-					}
-
-					return all.replace(
-						link,
-						urljoin(prefix, path.posix.normalize(link))
+				if (!this.baseImagesUrl && isLinkRelative) {
+					throw new Error(
+						`Couldn't detect the repository where this extension is published. The image will be broken in ${this.name}. GitHub/GitLab repositories will be automatically detected. Otherwise, please provide the repository URL in package.json or use the --baseContentUrl and --baseImagesUrl options.`
 					);
 				}
-			);
+				const prefix = this.baseImagesUrl;
 
-			if (
-				(this.gitHubIssueLinking && this.isGitHub) ||
-				(this.gitLabIssueLinking && this.isGitLab)
-			) {
-				const markdownIssueRegex =
-					/(\s|\n)([\w\d_-]+\/[\w\d_-]+)?#(\d+)\b/g;
+				if (!prefix || !isLinkRelative) {
+					return all;
+				}
+
+				return all.replace(link, urljoin(prefix, path.posix.normalize(link)));
+			});
+
+			if ((this.gitHubIssueLinking && this.isGitHub) || (this.gitLabIssueLinking && this.isGitLab)) {
+				const markdownIssueRegex = /(\s|\n)([\w\d_-]+\/[\w\d_-]+)?#(\d+)\b/g;
 				const issueReplace = (
 					all: string,
 					prefix: string,
@@ -928,55 +789,22 @@ export class MarkdownProcessor extends BaseProcessor {
 					let repositoryName: string | undefined;
 
 					if (ownerAndRepositoryName) {
-						[owner, repositoryName] = ownerAndRepositoryName.split(
-							"/",
-							2
-						);
+						[owner, repositoryName] = ownerAndRepositoryName.split('/', 2);
 					}
 
 					if (owner && repositoryName && issueNumber) {
 						// Issue in external repository
 						const issueUrl = this.isGitHub
-							? urljoin(
-									"https://github.com",
-									owner,
-									repositoryName,
-									"issues",
-									issueNumber
-							  )
-							: urljoin(
-									"https://gitlab.com",
-									owner,
-									repositoryName,
-									"-",
-									"issues",
-									issueNumber
-							  );
-						result =
-							prefix +
-							`[${owner}/${repositoryName}#${issueNumber}](${issueUrl})`;
-					} else if (
-						!owner &&
-						!repositoryName &&
-						issueNumber &&
-						this.repositoryUrl
-					) {
+							? urljoin('https://github.com', owner, repositoryName, 'issues', issueNumber)
+							: urljoin('https://gitlab.com', owner, repositoryName, '-', 'issues', issueNumber);
+						result = prefix + `[${owner}/${repositoryName}#${issueNumber}](${issueUrl})`;
+					} else if (!owner && !repositoryName && issueNumber && this.repositoryUrl) {
 						// Issue in own repository
 						result =
 							prefix +
-							`[#${issueNumber}](${
-								this.isGitHub
-									? urljoin(
-											this.repositoryUrl,
-											"issues",
-											issueNumber
-									  )
-									: urljoin(
-											this.repositoryUrl,
-											"-",
-											"issues",
-											issueNumber
-									  )
+							`[#${issueNumber}](${this.isGitHub
+								? urljoin(this.repositoryUrl, 'issues', issueNumber)
+								: urljoin(this.repositoryUrl, '-', 'issues', issueNumber)
 							})`;
 					}
 
@@ -991,32 +819,22 @@ export class MarkdownProcessor extends BaseProcessor {
 		const $ = cheerio.load(html);
 
 		if (this.rewriteRelativeLinks) {
-			$("img").each((_, img) => {
-				const rawSrc = $(img).attr("src");
+			$('img').each((_, img) => {
+				const rawSrc = $(img).attr('src');
 
 				if (!rawSrc) {
-					throw new Error(
-						`Images in ${this.name} must have a source.`
-					);
+					throw new Error(`Images in ${this.name} must have a source.`);
 				}
 
 				const src = decodeURI(rawSrc);
 				const srcUrl = new url.URL(src);
 
-				if (
-					/^data:$/i.test(srcUrl.protocol) &&
-					/^image$/i.test(srcUrl.host) &&
-					/\/svg/i.test(srcUrl.pathname)
-				) {
-					throw new Error(
-						`SVG data URLs are not allowed in ${this.name}: ${src}`
-					);
+				if (/^data:$/i.test(srcUrl.protocol) && /^image$/i.test(srcUrl.host) && /\/svg/i.test(srcUrl.pathname)) {
+					throw new Error(`SVG data URLs are not allowed in ${this.name}: ${src}`);
 				}
 
 				if (!/^https:$/i.test(srcUrl.protocol)) {
-					throw new Error(
-						`Images in ${this.name} must come from an HTTPS source: ${src}`
-					);
+					throw new Error(`Images in ${this.name} must come from an HTTPS source: ${src}`);
 				}
 
 				if (/\.svg$/i.test(srcUrl.pathname) && !isHostTrusted(srcUrl)) {
@@ -1027,13 +845,13 @@ export class MarkdownProcessor extends BaseProcessor {
 			});
 		}
 
-		$("svg").each(() => {
+		$('svg').each(() => {
 			throw new Error(`SVG tags are not allowed in ${this.name}.`);
 		});
 
 		return {
 			path: file.path,
-			contents: Buffer.from(contents, "utf8"),
+			contents: Buffer.from(contents, 'utf8'),
 		};
 	}
 
@@ -1043,25 +861,19 @@ export class MarkdownProcessor extends BaseProcessor {
 	): { content: string; images: string; repository: string } | undefined {
 		let repository = null;
 
-		if (typeof this.manifest.repository === "string") {
+		if (typeof this.manifest.repository === 'string') {
 			repository = this.manifest.repository;
-		} else if (
-			this.manifest.repository &&
-			typeof this.manifest.repository["url"] === "string"
-		) {
-			repository = this.manifest.repository["url"];
+		} else if (this.manifest.repository && typeof this.manifest.repository['url'] === 'string') {
+			repository = this.manifest.repository['url'];
 		}
 
 		if (!repository) {
 			return undefined;
 		}
 
-		const gitHubRegex =
-			/(?<domain>github(\.com\/|:))(?<project>(?:[^/]+)\/(?:[^/]+))(\/|$)/;
-		const gitLabRegex =
-			/(?<domain>gitlab(\.com\/|:))(?<project>(?:[^/]+)(\/(?:[^/]+))+)(\/|$)/;
-		const match = (gitHubRegex.exec(repository) ||
-			gitLabRegex.exec(repository)) as unknown as {
+		const gitHubRegex = /(?<domain>github(\.com\/|:))(?<project>(?:[^/]+)\/(?:[^/]+))(\/|$)/;
+		const gitLabRegex = /(?<domain>gitlab(\.com\/|:))(?<project>(?:[^/]+)(\/(?:[^/]+))+)(\/|$)/;
+		const match = ((gitHubRegex.exec(repository) || gitLabRegex.exec(repository)) as unknown) as {
 			groups: Record<string, string>;
 		};
 
@@ -1069,8 +881,8 @@ export class MarkdownProcessor extends BaseProcessor {
 			return undefined;
 		}
 
-		const project = match.groups.project.replace(/\.git$/i, "");
-		const branchName = githostBranch ? githostBranch : "HEAD";
+		const project = match.groups.project.replace(/\.git$/i, '');
+		const branchName = githostBranch ? githostBranch : 'HEAD';
 
 		if (/^github/.test(match.groups.domain)) {
 			return {
@@ -1092,22 +904,16 @@ export class MarkdownProcessor extends BaseProcessor {
 
 export class ReadmeProcessor extends MarkdownProcessor {
 	constructor(manifest: Manifest, options: IPackageOptions = {}) {
-		super(
-			manifest,
-			"README.md",
-			/^extension\/readme.md$/i,
-			"Microsoft.VisualStudio.Services.Content.Details",
-			options
-		);
+		super(manifest, 'README.md', /^extension\/readme.md$/i, 'Microsoft.VisualStudio.Services.Content.Details', options);
 	}
 }
 export class ChangelogProcessor extends MarkdownProcessor {
 	constructor(manifest: Manifest, options: IPackageOptions = {}) {
 		super(
 			manifest,
-			"CHANGELOG.md",
+			'CHANGELOG.md',
 			/^extension\/changelog.md$/i,
-			"Microsoft.VisualStudio.Services.Content.Changelog",
+			'Microsoft.VisualStudio.Services.Content.Changelog',
 			options
 		);
 	}
@@ -1118,21 +924,17 @@ export class LicenseProcessor extends BaseProcessor {
 	private expectedLicenseName: string;
 	filter: (name: string) => boolean;
 
-	constructor(
-		manifest: Manifest,
-		private readonly options: IPackageOptions = {}
-	) {
+	constructor(manifest: Manifest, private readonly options: IPackageOptions = {}) {
 		super(manifest);
 
-		const match = /^SEE LICENSE IN (.*)$/.exec(manifest.license || "");
+		const match = /^SEE LICENSE IN (.*)$/.exec(manifest.license || '');
 
 		if (!match || !match[1]) {
-			this.expectedLicenseName = "LICENSE, LICENSE.md, or LICENSE.txt";
-			this.filter = (name) =>
-				/^extension\/licen[cs]e(\.(md|txt))?$/i.test(name);
+			this.expectedLicenseName = 'LICENSE, LICENSE.md, or LICENSE.txt';
+			this.filter = name => /^extension\/licen[cs]e(\.(md|txt))?$/i.test(name);
 		} else {
 			this.expectedLicenseName = match[1];
-			const regexp = new RegExp("^extension/" + match[1] + "$");
+			const regexp = new RegExp('^extension/' + match[1] + '$');
 			this.filter = regexp.test.bind(regexp);
 		}
 
@@ -1145,14 +947,11 @@ export class LicenseProcessor extends BaseProcessor {
 
 			if (this.filter(normalizedPath)) {
 				if (!path.extname(normalizedPath)) {
-					file.path += ".txt";
-					normalizedPath += ".txt";
+					file.path += '.txt';
+					normalizedPath += '.txt';
 				}
 
-				this.assets.push({
-					type: "Microsoft.VisualStudio.Services.Content.License",
-					path: normalizedPath,
-				});
+				this.assets.push({ type: 'Microsoft.VisualStudio.Services.Content.License', path: normalizedPath });
 				this.vsix.license = normalizedPath;
 				this.didFindLicense = true;
 			}
@@ -1165,10 +964,8 @@ export class LicenseProcessor extends BaseProcessor {
 		if (!this.didFindLicense && !this.options.skipLicense) {
 			util.log.warn(`${this.expectedLicenseName} not found`);
 
-			if (
-				!/^y$/i.test(await util.read("Do you want to continue? [y/N] "))
-			) {
-				throw new Error("Aborted");
+			if (!/^y$/i.test(await util.read('Do you want to continue? [y/N] '))) {
+				throw new Error('Aborted');
 			}
 		}
 	}
@@ -1180,26 +977,18 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 	constructor(manifest: Manifest) {
 		super(manifest);
 		if (manifest.main) {
-			this.entryPoints.add(
-				util.normalize(
-					path.join("extension", this.appendJSExt(manifest.main))
-				)
-			);
+			this.entryPoints.add(util.normalize(path.join('extension', this.appendJSExt(manifest.main))));
 		}
 		if (manifest.browser) {
-			this.entryPoints.add(
-				util.normalize(
-					path.join("extension", this.appendJSExt(manifest.browser))
-				)
-			);
+			this.entryPoints.add(util.normalize(path.join('extension', this.appendJSExt(manifest.browser))));
 		}
 	}
 
 	appendJSExt(filePath: string): string {
-		if (filePath.endsWith(".js") || filePath.endsWith(".cjs")) {
+		if (filePath.endsWith('.js') || filePath.endsWith('.cjs')) {
 			return filePath;
 		}
-		return filePath + ".js";
+		return filePath + '.js';
 	}
 
 	onFile(file: IFile): Promise<IFile> {
@@ -1209,7 +998,7 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 
 	async onEnd(): Promise<void> {
 		if (this.entryPoints.size > 0) {
-			const files: string = [...this.entryPoints].join(",\n  ");
+			const files: string = [...this.entryPoints].join(',\n  ');
 			throw new Error(
 				`Extension entrypoint(s) missing. Make sure these files exist and aren't ignored by '.vscodeignore':\n  ${files}`
 			);
@@ -1224,8 +1013,7 @@ class IconProcessor extends BaseProcessor {
 	constructor(manifest: Manifest) {
 		super(manifest);
 
-		this.icon =
-			manifest.icon && path.posix.normalize(`extension/${manifest.icon}`);
+		this.icon = manifest.icon && path.posix.normalize(`extension/${manifest.icon}`);
 		delete this.vsix.icon;
 	}
 
@@ -1233,10 +1021,7 @@ class IconProcessor extends BaseProcessor {
 		const normalizedPath = util.normalize(file.path);
 		if (normalizedPath === this.icon) {
 			this.didFindIcon = true;
-			this.assets.push({
-				type: "Microsoft.VisualStudio.Services.Icons.Default",
-				path: normalizedPath,
-			});
+			this.assets.push({ type: 'Microsoft.VisualStudio.Services.Icons.Default', path: normalizedPath });
 			this.vsix.icon = this.icon;
 		}
 		return Promise.resolve(file);
@@ -1244,42 +1029,29 @@ class IconProcessor extends BaseProcessor {
 
 	async onEnd(): Promise<void> {
 		if (this.icon && !this.didFindIcon) {
-			return Promise.reject(
-				new Error(
-					`The specified icon '${this.icon}' wasn't found in the extension.`
-				)
-			);
+			return Promise.reject(new Error(`The specified icon '${this.icon}' wasn't found in the extension.`));
 		}
 	}
 }
 
-const ValidExtensionKinds = new Set(["ui", "workspace"]);
+const ValidExtensionKinds = new Set(['ui', 'workspace']);
 
 export function isWebKind(manifest: Manifest): boolean {
 	const extensionKind = getExtensionKind(manifest);
-	return extensionKind.some((kind) => kind === "web");
+	return extensionKind.some(kind => kind === 'web');
 }
 
 const extensionPointExtensionKindsMap = new Map<string, ExtensionKind[]>();
-extensionPointExtensionKindsMap.set("jsonValidation", ["workspace", "web"]);
-extensionPointExtensionKindsMap.set("localizations", ["ui", "workspace"]);
-extensionPointExtensionKindsMap.set("debuggers", ["workspace"]);
-extensionPointExtensionKindsMap.set("terminal", ["workspace"]);
-extensionPointExtensionKindsMap.set("typescriptServerPlugins", ["workspace"]);
-extensionPointExtensionKindsMap.set("markdown.previewStyles", [
-	"workspace",
-	"web",
-]);
-extensionPointExtensionKindsMap.set("markdown.previewScripts", [
-	"workspace",
-	"web",
-]);
-extensionPointExtensionKindsMap.set("markdown.markdownItPlugins", [
-	"workspace",
-	"web",
-]);
-extensionPointExtensionKindsMap.set("html.customData", ["workspace", "web"]);
-extensionPointExtensionKindsMap.set("css.customData", ["workspace", "web"]);
+extensionPointExtensionKindsMap.set('jsonValidation', ['workspace', 'web']);
+extensionPointExtensionKindsMap.set('localizations', ['ui', 'workspace']);
+extensionPointExtensionKindsMap.set('debuggers', ['workspace']);
+extensionPointExtensionKindsMap.set('terminal', ['workspace']);
+extensionPointExtensionKindsMap.set('typescriptServerPlugins', ['workspace']);
+extensionPointExtensionKindsMap.set('markdown.previewStyles', ['workspace', 'web']);
+extensionPointExtensionKindsMap.set('markdown.previewScripts', ['workspace', 'web']);
+extensionPointExtensionKindsMap.set('markdown.markdownItPlugins', ['workspace', 'web']);
+extensionPointExtensionKindsMap.set('html.customData', ['workspace', 'web']);
+extensionPointExtensionKindsMap.set('css.customData', ['workspace', 'web']);
 
 function getExtensionKind(manifest: Manifest): ExtensionKind[] {
 	const deduced = deduceExtensionKinds(manifest);
@@ -1288,13 +1060,13 @@ function getExtensionKind(manifest: Manifest): ExtensionKind[] {
 	if (manifest.extensionKind) {
 		const result: ExtensionKind[] = Array.isArray(manifest.extensionKind)
 			? manifest.extensionKind
-			: manifest.extensionKind === "ui"
-			? ["ui", "workspace"]
-			: [manifest.extensionKind];
+			: manifest.extensionKind === 'ui'
+				? ['ui', 'workspace']
+				: [manifest.extensionKind];
 
 		// Add web kind if the extension can run as web extension
-		if (deduced.includes("web") && !result.includes("web")) {
-			result.push("web");
+		if (deduced.includes('web') && !result.includes('web')) {
+			result.push('web');
 		}
 
 		return result;
@@ -1307,35 +1079,28 @@ function deduceExtensionKinds(manifest: Manifest): ExtensionKind[] {
 	// Not an UI extension if it has main
 	if (manifest.main) {
 		if (manifest.browser) {
-			return ["workspace", "web"];
+			return ['workspace', 'web'];
 		}
-		return ["workspace"];
+		return ['workspace'];
 	}
 
 	if (manifest.browser) {
-		return ["web"];
+		return ['web'];
 	}
 
-	let result: ExtensionKind[] = ["ui", "workspace", "web"];
+	let result: ExtensionKind[] = ['ui', 'workspace', 'web'];
 
 	const isNonEmptyArray = (obj: any) => Array.isArray(obj) && obj.length > 0;
 	// Extension pack defaults to workspace,web extensionKind
-	if (
-		isNonEmptyArray(manifest.extensionPack) ||
-		isNonEmptyArray(manifest.extensionDependencies)
-	) {
-		result = ["workspace", "web"];
+	if (isNonEmptyArray(manifest.extensionPack) || isNonEmptyArray(manifest.extensionDependencies)) {
+		result = ['workspace', 'web'];
 	}
 
 	if (manifest.contributes) {
 		for (const contribution of Object.keys(manifest.contributes)) {
-			const supportedExtensionKinds =
-				extensionPointExtensionKindsMap.get(contribution);
+			const supportedExtensionKinds = extensionPointExtensionKindsMap.get(contribution);
 			if (supportedExtensionKinds) {
-				result = result.filter(
-					(extensionKind) =>
-						supportedExtensionKinds.indexOf(extensionKind) !== -1
-				);
+				result = result.filter(extensionKind => supportedExtensionKinds.indexOf(extensionKind) !== -1);
 			}
 		}
 	}
@@ -1358,19 +1123,14 @@ export class NLSProcessor extends BaseProcessor {
 		}
 
 		const localizations = manifest.contributes.localizations;
-		const translations: { [languageId: string]: string } =
-			Object.create(null);
+		const translations: { [languageId: string]: string } = Object.create(null);
 
 		// take last reference in the manifest for any given language
 		for (const localization of localizations) {
 			for (const translation of localization.translations) {
-				if (translation.id === "vscode" && !!translation.path) {
-					const translationPath = util.normalize(
-						translation.path.replace(/^\.[\/\\]/, "")
-					);
-					translations[
-						localization.languageId.toUpperCase()
-					] = `extension/${translationPath}`;
+				if (translation.id === 'vscode' && !!translation.path) {
+					const translationPath = util.normalize(translation.path.replace(/^\.[\/\\]/, ''));
+					translations[localization.languageId.toUpperCase()] = `extension/${translationPath}`;
 				}
 			}
 		}
@@ -1386,10 +1146,7 @@ export class NLSProcessor extends BaseProcessor {
 		const language = this.translations[normalizedPath];
 
 		if (language) {
-			this.assets.push({
-				type: `Microsoft.VisualStudio.Code.Translation.${language}`,
-				path: normalizedPath,
-			});
+			this.assets.push({ type: `Microsoft.VisualStudio.Code.Translation.${language}`, path: normalizedPath });
 		}
 
 		return Promise.resolve(file);
@@ -1429,7 +1186,7 @@ export class ValidationProcessor extends BaseProcessor {
 			}
 		}
 
-		throw new Error(messages.join("\n"));
+		throw new Error(messages.join('\n'));
 	}
 }
 
@@ -1437,24 +1194,24 @@ export function validateManifest(manifest: Manifest): Manifest {
 	validateExtensionName(manifest.name);
 
 	if (!manifest.version) {
-		throw new Error("Manifest missing field: version");
+		throw new Error('Manifest missing field: version');
 	}
 
-	if (manifest.pricing && !["Free", "Trial"].includes(manifest.pricing)) {
+	if (manifest.pricing && !['Free', 'Trial'].includes(manifest.pricing)) {
 		throw new Error('Pricing can only be "Free" or "Trial"');
 	}
 
 	validateVersion(manifest.version);
 
 	if (!manifest.engines) {
-		throw new Error("Manifest missing field: engines");
+		throw new Error('Manifest missing field: engines');
 	}
 
-	if (!manifest.engines["vscode"]) {
-		throw new Error("Manifest missing field: engines.vscode");
+	if (!manifest.engines['vscode']) {
+		throw new Error('Manifest missing field: engines.vscode');
 	}
 
-	const engineVersion = manifest.engines["vscode"];
+	const engineVersion = manifest.engines['vscode'];
 	validateEngineCompatibility(engineVersion);
 
 	const hasActivationEvents = !!manifest.activationEvents;
@@ -1464,8 +1221,7 @@ export function validateManifest(manifest: Manifest): Manifest {
 		manifest.contributes?.authentication ||
 		manifest.contributes?.customEditors ||
 		manifest.contributes?.views;
-	const hasImplicitActivationEvents =
-		hasImplicitLanguageActivationEvents || hasOtherImplicitActivationEvents;
+	const hasImplicitActivationEvents = hasImplicitLanguageActivationEvents || hasOtherImplicitActivationEvents;
 
 	const hasMain = !!manifest.main;
 	const hasBrowser = !!manifest.browser;
@@ -1475,66 +1231,48 @@ export function validateManifest(manifest: Manifest): Manifest {
 		const engineSemver = parseSemver(`vscode@${engineVersion}`);
 		parsedEngineVersion = engineSemver.version;
 	} catch (err) {
-		throw new Error("Failed to parse semver of engines.vscode");
+		throw new Error('Failed to parse semver of engines.vscode');
 	}
 
 	if (
 		hasActivationEvents ||
-		((engineVersion === "*" ||
-			semver.satisfies(parsedEngineVersion, ">=1.74", {
-				includePrerelease: true,
-			})) &&
+		((engineVersion === '*' || semver.satisfies(parsedEngineVersion, '>=1.74', { includePrerelease: true })) &&
 			hasImplicitActivationEvents)
 	) {
-		if (
-			!hasMain &&
-			!hasBrowser &&
-			(hasActivationEvents || !hasImplicitLanguageActivationEvents)
-		) {
+		if (!hasMain && !hasBrowser && (hasActivationEvents || !hasImplicitLanguageActivationEvents)) {
 			throw new Error(
 				"Manifest needs either a 'main' or 'browser' property, given it has a 'activationEvents' property."
 			);
 		}
 	} else if (hasMain) {
-		throw new Error(
-			"Manifest needs the 'activationEvents' property, given it has a 'main' property."
-		);
+		throw new Error("Manifest needs the 'activationEvents' property, given it has a 'main' property.");
 	} else if (hasBrowser) {
-		throw new Error(
-			"Manifest needs the 'activationEvents' property, given it has a 'browser' property."
-		);
+		throw new Error("Manifest needs the 'activationEvents' property, given it has a 'browser' property.");
 	}
 
-	if (manifest.devDependencies && manifest.devDependencies["@types/vscode"]) {
-		validateVSCodeTypesCompatibility(
-			manifest.engines["vscode"],
-			manifest.devDependencies["@types/vscode"]
-		);
+	if (manifest.devDependencies && manifest.devDependencies['@types/vscode']) {
+		validateVSCodeTypesCompatibility(manifest.engines['vscode'], manifest.devDependencies['@types/vscode']);
 	}
 
-	if (/\.svg$/i.test(manifest.icon || "")) {
+	if (/\.svg$/i.test(manifest.icon || '')) {
 		throw new Error(`SVGs can't be used as icons: ${manifest.icon}`);
 	}
 
-	(manifest.badges ?? []).forEach((badge) => {
+	(manifest.badges ?? []).forEach(badge => {
 		const decodedUrl = decodeURI(badge.url);
 		const srcUrl = new url.URL(decodedUrl);
 
 		if (!/^https:$/i.test(srcUrl.protocol)) {
-			throw new Error(
-				`Badge URLs must come from an HTTPS source: ${badge.url}`
-			);
+			throw new Error(`Badge URLs must come from an HTTPS source: ${badge.url}`);
 		}
 
 		if (/\.svg$/i.test(srcUrl.pathname) && !isHostTrusted(srcUrl)) {
-			throw new Error(
-				`Badge SVGs are restricted. Please use other file image formats, such as PNG: ${badge.url}`
-			);
+			throw new Error(`Badge SVGs are restricted. Please use other file image formats, such as PNG: ${badge.url}`);
 		}
 	});
 
-	Object.keys(manifest.dependencies || {}).forEach((dep) => {
-		if (dep === "vscode") {
+	Object.keys(manifest.dependencies || {}).forEach(dep => {
+		if (dep === 'vscode') {
 			throw new Error(
 				`You should not depend on 'vscode' in your 'dependencies'. Did you mean to add it to 'devDependencies'?`
 			);
@@ -1542,9 +1280,7 @@ export function validateManifest(manifest: Manifest): Manifest {
 	});
 
 	if (manifest.extensionKind) {
-		const extensionKinds = Array.isArray(manifest.extensionKind)
-			? manifest.extensionKind
-			: [manifest.extensionKind];
+		const extensionKinds = Array.isArray(manifest.extensionKind) ? manifest.extensionKind : [manifest.extensionKind];
 
 		for (const kind of extensionKinds) {
 			if (!ValidExtensionKinds.has(kind)) {
@@ -1552,8 +1288,8 @@ export function validateManifest(manifest: Manifest): Manifest {
 					`Manifest contains invalid value '${kind}' in the 'extensionKind' property. Allowed values are ${[
 						...ValidExtensionKinds,
 					]
-						.map((k) => `'${k}'`)
-						.join(", ")}.`
+						.map(k => `'${k}'`)
+						.join(', ')}.`
 				);
 			}
 		}
@@ -1577,25 +1313,18 @@ export function validateManifest(manifest: Manifest): Manifest {
 	return manifest;
 }
 
-export function readManifest(
-	cwd = process.cwd(),
-	nls = true
-): Promise<Manifest> {
-	const manifestPath = path.join(cwd, "package.json");
-	const manifestNLSPath = path.join(cwd, "package.nls.json");
+export function readManifest(cwd = process.cwd(), nls = true): Promise<Manifest> {
+	const manifestPath = path.join(cwd, 'package.json');
+	const manifestNLSPath = path.join(cwd, 'package.nls.json');
 
 	const manifest = fs.promises
-		.readFile(manifestPath, "utf8")
-		.catch(() =>
-			Promise.reject(`Extension manifest not found: ${manifestPath}`)
-		)
-		.then<Manifest>((manifestStr) => {
+		.readFile(manifestPath, 'utf8')
+		.catch(() => Promise.reject(`Extension manifest not found: ${manifestPath}`))
+		.then<Manifest>(manifestStr => {
 			try {
 				return Promise.resolve(JSON.parse(manifestStr));
 			} catch (e) {
-				console.error(
-					`Error parsing 'package.json' manifest file: not a valid JSON file.`
-				);
+				console.error(`Error parsing 'package.json' manifest file: not a valid JSON file.`);
 				throw e;
 			}
 		})
@@ -1606,174 +1335,117 @@ export function readManifest(
 	}
 
 	const manifestNLS = fs.promises
-		.readFile(manifestNLSPath, "utf8")
-		.catch<string>((err) =>
-			err.code !== "ENOENT" ? Promise.reject(err) : Promise.resolve("{}")
-		)
-		.then<ITranslations>((raw) => {
+		.readFile(manifestNLSPath, 'utf8')
+		.catch<string>(err => (err.code !== 'ENOENT' ? Promise.reject(err) : Promise.resolve('{}')))
+		.then<ITranslations>(raw => {
 			try {
 				return Promise.resolve(jsonc.parse(raw));
 			} catch (e) {
-				console.error(
-					`Error parsing JSON manifest translations file: ${manifestNLSPath}`
-				);
+				console.error(`Error parsing JSON manifest translations file: ${manifestNLSPath}`);
 				throw e;
 			}
 		});
 
-	return Promise.all([manifest, manifestNLS]).then(
-		([manifest, translations]) => {
-			return patchNLS(manifest, translations);
-		}
-	);
+	return Promise.all([manifest, manifestNLS]).then(([manifest, translations]) => {
+		return patchNLS(manifest, translations);
+	});
 }
 
 const escapeChars = new Map([
-	["'", "&apos;"],
-	['"', "&quot;"],
-	["<", "&lt;"],
-	[">", "&gt;"],
-	["&", "&amp;"],
+	["'", '&apos;'],
+	['"', '&quot;'],
+	['<', '&lt;'],
+	['>', '&gt;'],
+	['&', '&amp;'],
 ]);
 
 function escape(value: any): string {
-	return String(value).replace(
-		/(['"<>&])/g,
-		(_, char) => escapeChars.get(char)!
-	);
+	return String(value).replace(/(['"<>&])/g, (_, char) => escapeChars.get(char)!);
 }
 
 export async function toVsixManifest(vsix: VSIX): Promise<string> {
 	return `<?xml version="1.0" encoding="utf-8"?>
 	<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 		<Metadata>
-			<Identity Language="en-US" Id="${escape(vsix.id)}" Version="${escape(
-				vsix.version
-			)}" Publisher="${escape(vsix.publisher)}" ${
-				vsix.target ? `TargetPlatform="${escape(vsix.target)}"` : ""
-			}/>
+			<Identity Language="en-US" Id="${escape(vsix.id)}" Version="${escape(vsix.version)}" Publisher="${escape(
+		vsix.publisher
+	)}" ${vsix.target ? `TargetPlatform="${escape(vsix.target)}"` : ''}/>
 			<DisplayName>${escape(vsix.displayName)}</DisplayName>
 			<Description xml:space="preserve">${escape(vsix.description)}</Description>
 			<Tags>${escape(vsix.tags)}</Tags>
 			<Categories>${escape(vsix.categories)}</Categories>
 			<GalleryFlags>${escape(vsix.flags)}</GalleryFlags>
-			${
-				!vsix.badges
-					? ""
-					: `<Badges>${vsix.badges
-							.map(
-								(badge) =>
-									`<Badge Link="${escape(
-										badge.href
-									)}" ImgUri="${escape(
-										badge.url
-									)}" Description="${escape(
-										badge.description
-									)}" />`
-							)
-							.join("\n")}</Badges>`
-			}
+			${!vsix.badges
+			? ''
+			: `<Badges>${vsix.badges
+				.map(
+					badge =>
+						`<Badge Link="${escape(badge.href)}" ImgUri="${escape(badge.url)}" Description="${escape(
+							badge.description
+						)}" />`
+				)
+				.join('\n')}</Badges>`
+		}
 			<Properties>
-				<Property Id="Microsoft.VisualStudio.Code.Engine" Value="${escape(
-					vsix.engine
-				)}" />
-				<Property Id="Microsoft.VisualStudio.Code.ExtensionDependencies" Value="${escape(
-					vsix.extensionDependencies
-				)}" />
-				<Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value="${escape(
-					vsix.extensionPack
-				)}" />
-				<Property Id="Microsoft.VisualStudio.Code.ExtensionKind" Value="${escape(
-					vsix.extensionKind
-				)}" />
-				<Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="${escape(
-					vsix.localizedLanguages
-				)}" />
-				${
-					vsix.preRelease
-						? `<Property Id="Microsoft.VisualStudio.Code.PreRelease" Value="${escape(
-								vsix.preRelease
-						  )}" />`
-						: ""
-				}
-				${
-					vsix.sponsorLink
-						? `<Property Id="Microsoft.VisualStudio.Code.SponsorLink" Value="${escape(
-								vsix.sponsorLink
-						  )}" />`
-						: ""
-				}
-				${
-					!vsix.links.repository
-						? ""
-						: `<Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="${escape(
-								vsix.links.repository
-						  )}" />
-				<Property Id="Microsoft.VisualStudio.Services.Links.Getstarted" Value="${escape(
+				<Property Id="Microsoft.VisualStudio.Code.Engine" Value="${escape(vsix.engine)}" />
+				<Property Id="Microsoft.VisualStudio.Code.ExtensionDependencies" Value="${escape(vsix.extensionDependencies)}" />
+				<Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value="${escape(vsix.extensionPack)}" />
+				<Property Id="Microsoft.VisualStudio.Code.ExtensionKind" Value="${escape(vsix.extensionKind)}" />
+				<Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="${escape(vsix.localizedLanguages)}" />
+				${vsix.preRelease ? `<Property Id="Microsoft.VisualStudio.Code.PreRelease" Value="${escape(vsix.preRelease)}" />` : ''}
+				${vsix.sponsorLink
+			? `<Property Id="Microsoft.VisualStudio.Code.SponsorLink" Value="${escape(vsix.sponsorLink)}" />`
+			: ''
+		}
+				${!vsix.links.repository
+			? ''
+			: `<Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="${escape(vsix.links.repository)}" />
+				<Property Id="Microsoft.VisualStudio.Services.Links.Getstarted" Value="${escape(vsix.links.repository)}" />
+				${vsix.links.github
+				? `<Property Id="Microsoft.VisualStudio.Services.Links.GitHub" Value="${escape(vsix.links.github)}" />`
+				: `<Property Id="Microsoft.VisualStudio.Services.Links.Repository" Value="${escape(
 					vsix.links.repository
-				)}" />
-				${
-					vsix.links.github
-						? `<Property Id="Microsoft.VisualStudio.Services.Links.GitHub" Value="${escape(
-								vsix.links.github
-						  )}" />`
-						: `<Property Id="Microsoft.VisualStudio.Services.Links.Repository" Value="${escape(
-								vsix.links.repository
-						  )}" />`
-				}`
-				}
-				${
-					vsix.links.bugs
-						? `<Property Id="Microsoft.VisualStudio.Services.Links.Support" Value="${escape(
-								vsix.links.bugs
-						  )}" />`
-						: ""
-				}
-				${
-					vsix.links.homepage
-						? `<Property Id="Microsoft.VisualStudio.Services.Links.Learn" Value="${escape(
-								vsix.links.homepage
-						  )}" />`
-						: ""
-				}
-				${
-					vsix.galleryBanner.color
-						? `<Property Id="Microsoft.VisualStudio.Services.Branding.Color" Value="${escape(
-								vsix.galleryBanner.color
-						  )}" />`
-						: ""
-				}
-				${
-					vsix.galleryBanner.theme
-						? `<Property Id="Microsoft.VisualStudio.Services.Branding.Theme" Value="${escape(
-								vsix.galleryBanner.theme
-						  )}" />`
-						: ""
-				}
-				<Property Id="Microsoft.VisualStudio.Services.GitHubFlavoredMarkdown" Value="${escape(
-					vsix.githubMarkdown
-				)}" />
-				<Property Id="Microsoft.VisualStudio.Services.Content.Pricing" Value="${escape(
-					vsix.pricing
-				)}"/>
+				)}" />`
+			}`
+		}
+				${vsix.links.bugs
+			? `<Property Id="Microsoft.VisualStudio.Services.Links.Support" Value="${escape(vsix.links.bugs)}" />`
+			: ''
+		}
+				${vsix.links.homepage
+			? `<Property Id="Microsoft.VisualStudio.Services.Links.Learn" Value="${escape(vsix.links.homepage)}" />`
+			: ''
+		}
+				${vsix.galleryBanner.color
+			? `<Property Id="Microsoft.VisualStudio.Services.Branding.Color" Value="${escape(
+				vsix.galleryBanner.color
+			)}" />`
+			: ''
+		}
+				${vsix.galleryBanner.theme
+			? `<Property Id="Microsoft.VisualStudio.Services.Branding.Theme" Value="${escape(
+				vsix.galleryBanner.theme
+			)}" />`
+			: ''
+		}
+				<Property Id="Microsoft.VisualStudio.Services.GitHubFlavoredMarkdown" Value="${escape(vsix.githubMarkdown)}" />
+				<Property Id="Microsoft.VisualStudio.Services.Content.Pricing" Value="${escape(vsix.pricing)}"/>
 
-				${
-					vsix.enableMarketplaceQnA !== undefined
-						? `<Property Id="Microsoft.VisualStudio.Services.EnableMarketplaceQnA" Value="${escape(
-								vsix.enableMarketplaceQnA
-						  )}" />`
-						: ""
-				}
-				${
-					vsix.customerQnALink !== undefined
-						? `<Property Id="Microsoft.VisualStudio.Services.CustomerQnALink" Value="${escape(
-								vsix.customerQnALink
-						  )}" />`
-						: ""
-				}
+				${vsix.enableMarketplaceQnA !== undefined
+			? `<Property Id="Microsoft.VisualStudio.Services.EnableMarketplaceQnA" Value="${escape(
+				vsix.enableMarketplaceQnA
+			)}" />`
+			: ''
+		}
+				${vsix.customerQnALink !== undefined
+			? `<Property Id="Microsoft.VisualStudio.Services.CustomerQnALink" Value="${escape(
+				vsix.customerQnALink
+			)}" />`
+			: ''
+		}
 			</Properties>
-			${vsix.license ? `<License>${escape(vsix.license)}</License>` : ""}
-			${vsix.icon ? `<Icon>${escape(vsix.icon)}</Icon>` : ""}
+			${vsix.license ? `<License>${escape(vsix.license)}</License>` : ''}
+			${vsix.icon ? `<Icon>${escape(vsix.icon)}</Icon>` : ''}
 		</Metadata>
 		<Installation>
 			<InstallationTarget Id="Microsoft.VisualStudio.Code"/>
@@ -1782,20 +1454,15 @@ export async function toVsixManifest(vsix: VSIX): Promise<string> {
 		<Assets>
 			<Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
 			${vsix.assets
-				.map(
-					(asset) =>
-						`<Asset Type="${escape(asset.type)}" Path="${escape(
-							asset.path
-						)}" Addressable="true" />`
-				)
-				.join("\n")}
+			.map(asset => `<Asset Type="${escape(asset.type)}" Path="${escape(asset.path)}" Addressable="true" />`)
+			.join('\n')}
 		</Assets>
 	</PackageManifest>`;
 }
 
 const defaultMimetypes = new Map<string, string>([
-	[".json", "application/json"],
-	[".vsixmanifest", "text/xml"],
+	['.json', 'application/json'],
+	['.vsixmanifest', 'text/xml'],
 ]);
 
 export async function toContentTypes(files: IFile[]): Promise<string> {
@@ -1811,74 +1478,59 @@ export async function toContentTypes(files: IFile[]): Promise<string> {
 
 	const contentTypes: string[] = [];
 	for (const [extension, contentType] of mimetypes) {
-		contentTypes.push(
-			`<Default Extension="${extension}" ContentType="${contentType}"/>`
-		);
+		contentTypes.push(`<Default Extension="${extension}" ContentType="${contentType}"/>`);
 	}
 
 	return `<?xml version="1.0" encoding="utf-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${contentTypes.join(
-		""
-	)}</Types>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${contentTypes.join('')}</Types>
 `;
 }
 
 const defaultIgnore = [
-	".vscodeignore",
-	"package-lock.json",
-	"npm-debug.log",
-	"yarn.lock",
-	"yarn-error.log",
-	"npm-shrinkwrap.json",
-	".editorconfig",
-	".npmrc",
-	".yarnrc",
-	".gitattributes",
-	"*.todo",
-	"tslint.yaml",
-	".eslintrc*",
-	".babelrc*",
-	".prettierrc*",
-	".cz-config.js",
-	".commitlintrc*",
-	"webpack.config.js",
-	"ISSUE_TEMPLATE.md",
-	"CONTRIBUTING.md",
-	"PULL_REQUEST_TEMPLATE.md",
-	"CODE_OF_CONDUCT.md",
-	".github",
-	".travis.yml",
-	"appveyor.yml",
-	"**/.git/**",
-	"**/*.vsix",
-	"**/.DS_Store",
-	"**/*.vsixmanifest",
-	"**/.vscode-test/**",
-	"**/.vscode-test-web/**",
+	'.vscodeignore',
+	'package-lock.json',
+	'npm-debug.log',
+	'yarn.lock',
+	'yarn-error.log',
+	'npm-shrinkwrap.json',
+	'.editorconfig',
+	'.npmrc',
+	'.yarnrc',
+	'.gitattributes',
+	'*.todo',
+	'tslint.yaml',
+	'.eslintrc*',
+	'.babelrc*',
+	'.prettierrc*',
+	'.cz-config.js',
+	'.commitlintrc*',
+	'webpack.config.js',
+	'ISSUE_TEMPLATE.md',
+	'CONTRIBUTING.md',
+	'PULL_REQUEST_TEMPLATE.md',
+	'CODE_OF_CONDUCT.md',
+	'.github',
+	'.travis.yml',
+	'appveyor.yml',
+	'**/.git/**',
+	'**/*.vsix',
+	'**/.DS_Store',
+	'**/*.vsixmanifest',
+	'**/.vscode-test/**',
+	'**/.vscode-test-web/**',
 ];
 
-const notIgnored = ["!package.json", "!README.md"];
+const notIgnored = ['!package.json', '!README.md'];
 
 async function collectAllFiles(
 	cwd: string,
-	dependencies: "npm" | "yarn" | "none" | undefined,
+	dependencies: 'npm' | 'yarn' | 'none' | undefined,
 	dependencyEntryPoints?: string[]
 ): Promise<string[]> {
-	const deps = await getDependencies(
-		cwd,
-		dependencies,
-		dependencyEntryPoints
-	);
-	const promises = deps.map((dep) =>
-		promisify(glob)("**", {
-			cwd: dep,
-			nodir: true,
-			dot: true,
-			ignore: "node_modules/**",
-		}).then((files) =>
-			files
-				.map((f) => path.relative(cwd, path.join(dep, f)))
-				.map((f) => f.replace(/\\/g, "/"))
+	const deps = await getDependencies(cwd, dependencies, dependencyEntryPoints);
+	const promises = deps.map(dep =>
+		promisify(glob)('**', { cwd: dep, nodir: true, dot: true, ignore: 'node_modules/**' }).then(files =>
+			files.map(f => path.relative(cwd, path.join(dep, f))).map(f => f.replace(/\\/g, '/'))
 		)
 	);
 
@@ -1887,140 +1539,89 @@ async function collectAllFiles(
 
 function collectFiles(
 	cwd: string,
-	dependencies: "npm" | "yarn" | "none" | undefined,
+	dependencies: 'npm' | 'yarn' | 'none' | undefined,
 	dependencyEntryPoints?: string[],
 	ignoreFile?: string
 ): Promise<string[]> {
-	return collectAllFiles(cwd, dependencies, dependencyEntryPoints).then(
-		(files) => {
-			files = files.filter((f) => !/\r$/m.test(f));
+	return collectAllFiles(cwd, dependencies, dependencyEntryPoints).then(files => {
+		files = files.filter(f => !/\r$/m.test(f));
 
-			return (
-				fs.promises
-					.readFile(
-						ignoreFile
-							? ignoreFile
-							: path.join(cwd, ".vscodeignore"),
-						"utf8"
+		return (
+			fs.promises
+				.readFile(ignoreFile ? ignoreFile : path.join(cwd, '.vscodeignore'), 'utf8')
+				.catch<string>(err =>
+					err.code !== 'ENOENT' ? Promise.reject(err) : ignoreFile ? Promise.reject(err) : Promise.resolve('')
+				)
+
+				// Parse raw ignore by splitting output into lines and filtering out empty lines and comments
+				.then(rawIgnore =>
+					rawIgnore
+						.split(/[\n\r]/)
+						.map(s => s.trim())
+						.filter(s => !!s)
+						.filter(i => !/^\s*#/.test(i))
+				)
+
+				// Add '/**' to possible folder names
+				.then(ignore => [
+					...ignore,
+					...ignore.filter(i => !/(^|\/)[^/]*\*[^/]*$/.test(i)).map(i => (/\/$/.test(i) ? `${i}**` : `${i}/**`)),
+				])
+
+				// Combine with default ignore list
+				.then(ignore => [...defaultIgnore, ...ignore, ...notIgnored])
+
+				// Split into ignore and negate list
+				.then(ignore =>
+					ignore.reduce<[string[], string[]]>(
+						(r, e) => (!/^\s*!/.test(e) ? [[...r[0], e], r[1]] : [r[0], [...r[1], e]]),
+						[[], []]
 					)
-					.catch<string>((err) =>
-						err.code !== "ENOENT"
-							? Promise.reject(err)
-							: ignoreFile
-							? Promise.reject(err)
-							: Promise.resolve("")
+				)
+				.then(r => ({ ignore: r[0], negate: r[1] }))
+
+				// Filter out files
+				.then(({ ignore, negate }) =>
+					files.filter(
+						f =>
+							!ignore.some(i => minimatch(f, i, MinimatchOptions)) ||
+							negate.some(i => minimatch(f, i.substr(1), MinimatchOptions))
 					)
-
-					// Parse raw ignore by splitting output into lines and filtering out empty lines and comments
-					.then((rawIgnore) =>
-						rawIgnore
-							.split(/[\n\r]/)
-							.map((s) => s.trim())
-							.filter((s) => !!s)
-							.filter((i) => !/^\s*#/.test(i))
-					)
-
-					// Add '/**' to possible folder names
-					.then((ignore) => [
-						...ignore,
-						...ignore
-							.filter((i) => !/(^|\/)[^/]*\*[^/]*$/.test(i))
-							.map((i) => (/\/$/.test(i) ? `${i}**` : `${i}/**`)),
-					])
-
-					// Combine with default ignore list
-					.then((ignore) => [
-						...defaultIgnore,
-						...ignore,
-						...notIgnored,
-					])
-
-					// Split into ignore and negate list
-					.then((ignore) =>
-						ignore.reduce<[string[], string[]]>(
-							(r, e) =>
-								!/^\s*!/.test(e)
-									? [[...r[0], e], r[1]]
-									: [r[0], [...r[1], e]],
-							[[], []]
-						)
-					)
-					.then((r) => ({ ignore: r[0], negate: r[1] }))
-
-					// Filter out files
-					.then(({ ignore, negate }) =>
-						files.filter(
-							(f) =>
-								!ignore.some((i) =>
-									minimatch(f, i, MinimatchOptions)
-								) ||
-								negate.some((i) =>
-									minimatch(f, i.substr(1), MinimatchOptions)
-								)
-						)
-					)
-			);
-		}
-	);
-}
-
-export function processFiles(
-	processors: IProcessor[],
-	files: IFile[]
-): Promise<IFile[]> {
-	const processedFiles = files.map((file) =>
-		util.chain(file, processors, (file, processor) =>
-			processor.onFile(file)
-		)
-	);
-
-	return Promise.all(processedFiles).then((files) => {
-		return util
-			.sequence(processors.map((p) => () => p.onEnd()))
-			.then(() => {
-				const assets = processors.reduce<IAsset[]>(
-					(r, p) => [...r, ...p.assets],
-					[]
-				);
-				const tags = [
-					...processors.reduce<Set<string>>((r, p) => {
-						for (const tag of p.tags) {
-							if (tag) {
-								r.add(tag);
-							}
-						}
-						return r;
-					}, new Set()),
-				].join(",");
-				const vsix = processors.reduce<VSIX>(
-					(r, p) => ({ ...r, ...p.vsix }),
-					{ assets, tags } as VSIX
-				);
-
-				return Promise.all([
-					toVsixManifest(vsix),
-					toContentTypes(files),
-				]).then((result) => {
-					return [
-						{
-							path: "extension.vsixmanifest",
-							contents: Buffer.from(result[0], "utf8"),
-						},
-						{
-							path: "[Content_Types].xml",
-							contents: Buffer.from(result[1], "utf8"),
-						},
-						...files,
-					];
-				});
-			});
+				)
+		);
 	});
 }
 
-export function createDefaultProcessors(
-	manifest: Manifest,
-	options: IPackageOptions = {}
-): IProcessor[] {
+export function processFiles(processors: IProcessor[], files: IFile[]): Promise<IFile[]> {
+	const processedFiles = files.map(file => util.chain(file, processors, (file, processor) => processor.onFile(file)));
+
+	return Promise.all(processedFiles).then(files => {
+		return util.sequence(processors.map(p => () => p.onEnd())).then(() => {
+			const assets = processors.reduce<IAsset[]>((r, p) => [...r, ...p.assets], []);
+			const tags = [
+				...processors.reduce<Set<string>>((r, p) => {
+					for (const tag of p.tags) {
+						if (tag) {
+							r.add(tag);
+						}
+					}
+					return r;
+				}, new Set()),
+			].join(',');
+			const vsix = processors.reduce<VSIX>((r, p) => ({ ...r, ...p.vsix }), { assets, tags } as VSIX);
+
+			return Promise.all([toVsixManifest(vsix), toContentTypes(files)]).then(result => {
+				return [
+					{ path: 'extension.vsixmanifest', contents: Buffer.from(result[0], 'utf8') },
+					{ path: '[Content_Types].xml', contents: Buffer.from(result[1], 'utf8') },
+					...files,
+				];
+			});
+		});
+	});
+}
+
+export function createDefaultProcessors(manifest: Manifest, options: IPackageOptions = {}): IProcessor[] {
 	return [
 		new ManifestProcessor(manifest, options),
 		new TagsProcessor(manifest),
@@ -2034,42 +1635,29 @@ export function createDefaultProcessors(
 	];
 }
 
-function getDependenciesOption(
-	options: IListFilesOptions
-): "npm" | "yarn" | "none" | undefined {
+function getDependenciesOption(options: IListFilesOptions): 'npm' | 'yarn' | 'none' | undefined {
 	if (options.dependencies === false) {
-		return "none";
+		return 'none';
 	}
 
 	switch (options.useYarn) {
 		case true:
-			return "yarn";
+			return 'yarn';
 		case false:
-			return "npm";
+			return 'npm';
 		default:
 			return undefined;
 	}
 }
 
-export function collect(
-	manifest: Manifest,
-	options: IPackageOptions = {}
-): Promise<IFile[]> {
+export function collect(manifest: Manifest, options: IPackageOptions = {}): Promise<IFile[]> {
 	const cwd = options.cwd || process.cwd();
 	const packagedDependencies = options.dependencyEntryPoints || undefined;
 	const ignoreFile = options.ignoreFile || undefined;
 	const processors = createDefaultProcessors(manifest, options);
 
-	return collectFiles(
-		cwd,
-		getDependenciesOption(options),
-		packagedDependencies,
-		ignoreFile
-	).then((fileNames) => {
-		const files = fileNames.map((f) => ({
-			path: `extension/${f}`,
-			localPath: path.join(cwd, f),
-		}));
+	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile).then(fileNames => {
+		const files = fileNames.map(f => ({ path: `extension/${f}`, localPath: path.join(cwd, f) }));
 
 		return processFiles(processors, files);
 	});
@@ -2078,24 +1666,16 @@ export function collect(
 function writeVsix(files: IFile[], packagePath: string): Promise<void> {
 	return fs.promises
 		.unlink(packagePath)
-		.catch((err) =>
-			err.code !== "ENOENT" ? Promise.reject(err) : Promise.resolve(null)
-		)
+		.catch(err => (err.code !== 'ENOENT' ? Promise.reject(err) : Promise.resolve(null)))
 		.then(
 			() =>
 				new Promise((c, e) => {
 					const zip = new yazl.ZipFile();
-					files.forEach((f) =>
+					files.forEach(f =>
 						isInMemoryFile(f)
-							? zip.addBuffer(
-									typeof f.contents === "string"
-										? Buffer.from(f.contents, "utf8")
-										: f.contents,
-									f.path,
-									{
-										mode: f.mode,
-									}
-							  )
+							? zip.addBuffer(typeof f.contents === 'string' ? Buffer.from(f.contents, 'utf8') : f.contents, f.path, {
+								mode: f.mode,
+							})
 							: zip.addFile(f.localPath, f.path, { mode: f.mode })
 					);
 					zip.end();
@@ -2103,17 +1683,14 @@ function writeVsix(files: IFile[], packagePath: string): Promise<void> {
 					const zipStream = fs.createWriteStream(packagePath);
 					zip.outputStream.pipe(zipStream);
 
-					zip.outputStream.once("error", e);
-					zipStream.once("error", e);
-					zipStream.once("finish", () => c());
+					zip.outputStream.once('error', e);
+					zipStream.once('error', e);
+					zipStream.once('finish', () => c());
 				})
 		);
 }
 
-function getDefaultPackageName(
-	manifest: Manifest,
-	options: IPackageOptions
-): string {
+function getDefaultPackageName(manifest: Manifest, options: IPackageOptions): string {
 	let version = manifest.version;
 
 	if (options.version && !(options.updatePackageJson ?? true)) {
@@ -2127,12 +1704,8 @@ function getDefaultPackageName(
 	return `${manifest.name}-${version}.vsix`;
 }
 
-export async function prepublish(
-	cwd: string,
-	manifest: Manifest,
-	useYarn?: boolean
-): Promise<void> {
-	if (!manifest.scripts || !manifest.scripts["vscode:prepublish"]) {
+export async function prepublish(cwd: string, manifest: Manifest, useYarn?: boolean): Promise<void> {
+	if (!manifest.scripts || !manifest.scripts['vscode:prepublish']) {
 		return;
 	}
 
@@ -2140,31 +1713,17 @@ export async function prepublish(
 		useYarn = await detectYarn(cwd);
 	}
 
-	console.log(
-		`Executing prepublish script '${
-			useYarn ? "yarn" : "npm"
-		} run vscode:prepublish'...`
-	);
+	console.log(`Executing prepublish script '${useYarn ? 'yarn' : 'npm'} run vscode:prepublish'...`);
 
 	await new Promise<void>((c, e) => {
-		const tool = useYarn ? "yarn" : "npm";
-		const child = cp.spawn(tool, ["run", "vscode:prepublish"], {
-			cwd,
-			shell: true,
-			stdio: "inherit",
-		});
-		child.on("exit", (code) =>
-			code === 0 ? c() : e(`${tool} failed with exit code ${code}`)
-		);
-		child.on("error", e);
+		const tool = useYarn ? 'yarn' : 'npm';
+		const child = cp.spawn(tool, ['run', 'vscode:prepublish'], { cwd, shell: true, stdio: 'inherit' });
+		child.on('exit', code => (code === 0 ? c() : e(`${tool} failed with exit code ${code}`)));
+		child.on('error', e);
 	});
 }
 
-async function getPackagePath(
-	cwd: string,
-	manifest: Manifest,
-	options: IPackageOptions = {}
-): Promise<string> {
+async function getPackagePath(cwd: string, manifest: Manifest, options: IPackageOptions = {}): Promise<string> {
 	if (!options.packagePath) {
 		return path.join(cwd, getDefaultPackageName(manifest, options));
 	}
@@ -2173,10 +1732,7 @@ async function getPackagePath(
 		const _stat = await fs.promises.stat(options.packagePath);
 
 		if (_stat.isDirectory()) {
-			return path.join(
-				options.packagePath,
-				getDefaultPackageName(manifest, options)
-			);
+			return path.join(options.packagePath, getDefaultPackageName(manifest, options));
 		} else {
 			return options.packagePath;
 		}
@@ -2185,13 +1741,11 @@ async function getPackagePath(
 	}
 }
 
-export async function pack(
-	options: IPackageOptions = {}
-): Promise<IPackageResult> {
+export async function pack(options: IPackageOptions = {}): Promise<IPackageResult> {
 	const cwd = options.cwd || process.cwd();
 	const manifest = await readManifest(cwd);
 	const files = await collect(manifest, options);
-	const jsFiles = files.filter((f) => /\.js$/i.test(f.path));
+	const jsFiles = files.filter(f => /\.js$/i.test(f.path));
 
 	if (files.length > 5000 || jsFiles.length > 100) {
 		console.log(
@@ -2209,9 +1763,7 @@ export async function pack(
 	return { manifest, packagePath, files };
 }
 
-export async function packageCommand(
-	options: IPackageOptions = {}
-): Promise<any> {
+export async function packageCommand(options: IPackageOptions = {}): Promise<any> {
 	const cwd = options.cwd || process.cwd();
 	const manifest = await readManifest(cwd);
 	util.patchOptionsWithManifest(options, manifest);
@@ -2223,19 +1775,17 @@ export async function packageCommand(
 	const stats = await fs.promises.stat(packagePath);
 
 	let size = 0;
-	let unit = "";
+	let unit = '';
 
 	if (stats.size > 1048576) {
 		size = Math.round(stats.size / 10485.76) / 100;
-		unit = "MB";
+		unit = 'MB';
 	} else {
 		size = Math.round(stats.size / 10.24) / 100;
-		unit = "KB";
+		unit = 'KB';
 	}
 
-	util.log.done(
-		`Packaged: ${packagePath} (${files.length} files, ${size}${unit})`
-	);
+	util.log.done(`Packaged: ${packagePath} (${files.length} files, ${size}${unit})`);
 }
 
 export interface IListFilesOptions {
@@ -2250,9 +1800,7 @@ export interface IListFilesOptions {
 /**
  * Lists the files included in the extension's package.
  */
-export async function listFiles(
-	options: IListFilesOptions = {}
-): Promise<string[]> {
+export async function listFiles(options: IListFilesOptions = {}): Promise<string[]> {
 	const cwd = options.cwd ?? process.cwd();
 	const manifest = await readManifest(cwd);
 
@@ -2260,12 +1808,7 @@ export async function listFiles(
 		await prepublish(cwd, manifest, options.useYarn);
 	}
 
-	return await collectFiles(
-		cwd,
-		getDependenciesOption(options),
-		options.packagedDependencies,
-		options.ignoreFile
-	);
+	return await collectFiles(cwd, getDependenciesOption(options), options.packagedDependencies, options.ignoreFile);
 }
 
 /**

@@ -1,9 +1,5 @@
-import { publish as _publish, IPublishOptions } from "./publish";
-import {
-	packageCommand,
-	listFiles as _listFiles,
-	IPackageOptions,
-} from "./package";
+import { publish as _publish, IPublishOptions } from './publish';
+import { packageCommand, listFiles as _listFiles, IPackageOptions } from './package';
 
 /**
  * @deprecated prefer IPackageOptions instead
@@ -11,21 +7,14 @@ import {
  */
 export type IBaseVSIXOptions = Pick<
 	IPackageOptions,
-	| "baseContentUrl"
-	| "baseImagesUrl"
-	| "githubBranch"
-	| "gitlabBranch"
-	| "useYarn"
-	| "target"
-	| "preRelease"
+	'baseContentUrl' | 'baseImagesUrl' | 'githubBranch' | 'gitlabBranch' | 'useYarn' | 'target' | 'preRelease'
 >;
 
 /**
  * @deprecated prefer IPackageOptions instead
  * @public
  */
-export type ICreateVSIXOptions = Pick<IPackageOptions, "cwd" | "packagePath"> &
-	IBaseVSIXOptions;
+export type ICreateVSIXOptions = Pick<IPackageOptions, 'cwd' | 'packagePath'> & IBaseVSIXOptions;
 
 /**
  * The supported list of package managers.
@@ -67,7 +56,7 @@ export interface IListFilesOptions {
 	ignoreFile?: string;
 }
 
-export type { IPackageOptions } from "./package";
+export type { IPackageOptions } from './package';
 
 /**
  * Creates a VSIX from the extension in the current working directory.
@@ -77,7 +66,7 @@ export function createVSIX(options: IPackageOptions = {}): Promise<any> {
 	return packageCommand(options);
 }
 
-export type { IPublishOptions } from "./publish";
+export type { IPublishOptions } from './publish';
 
 /**
  * Publishes the extension in the current working directory.
@@ -103,23 +92,17 @@ export function listFiles(options: IListFilesOptions = {}): Promise<string[]> {
  * Options for the `publishVSIX` function.
  * @public
  */
-export type IPublishVSIXOptions = IPublishOptions &
-	Pick<IPackageOptions, "target">;
+export type IPublishVSIXOptions = IPublishOptions & Pick<IPackageOptions, 'target'>;
 
 /**
  * Publishes a pre-build VSIX.
  * @public
  */
-export function publishVSIX(
-	packagePath: string | string[],
-	options: IPublishVSIXOptions = {}
-): Promise<any> {
+export function publishVSIX(packagePath: string | string[], options: IPublishVSIXOptions = {}): Promise<any> {
 	return _publish({
-		packagePath:
-			typeof packagePath === "string" ? [packagePath] : packagePath,
+		packagePath: typeof packagePath === 'string' ? [packagePath] : packagePath,
 		...options,
-		targets:
-			typeof options.target === "string" ? [options.target] : undefined,
+		targets: typeof options.target === 'string' ? [options.target] : undefined,
 		...{ target: undefined },
 	});
 }
