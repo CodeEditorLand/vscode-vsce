@@ -1,14 +1,12 @@
 {
 	"name": "root-test-package",
-	"version": "1.0.0",
 	"publisher": "joaomoreno",
+	"version": "1.0.0",
+	"engines": { "vscode": "*" },
 	"dependencies": {
 		"real": "*"
 	},
 	"devDependencies": {
 		"fake": "*"
-	},
-	"engines": {
-		"vscode": "*"
 	}
 }

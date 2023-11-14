@@ -1,8 +1,6 @@
 {
 	"name": "uuid",
-	"version": "1.0.0",
 	"publisher": "joaomoreno",
-	"engines": {
-		"vscode": "*"
-	}
+	"version": "1.0.0",
+	"engines": { "vscode": "*" }
 }
