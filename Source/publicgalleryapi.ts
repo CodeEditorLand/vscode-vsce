@@ -1,13 +1,13 @@
-import { HttpClient, HttpClientResponse } from 'typed-rest-client/HttpClient';
+import { HttpClient, HttpClientResponse } from "typed-rest-client/HttpClient";
 import {
 	PublishedExtension,
 	ExtensionQueryFlags,
 	FilterCriteria,
 	ExtensionQueryFilterType,
 	TypeInfo,
-} from 'azure-devops-node-api/interfaces/GalleryInterfaces';
-import { IHeaders } from 'azure-devops-node-api/interfaces/common/VsoBaseInterfaces';
-import { ContractSerializer } from 'azure-devops-node-api/Serialization';
+} from "azure-devops-node-api/interfaces/GalleryInterfaces";
+import { IHeaders } from "azure-devops-node-api/interfaces/common/VsoBaseInterfaces";
+import { ContractSerializer } from "azure-devops-node-api/Serialization";
 
 export interface ExtensionQuery {
 	readonly pageNumber?: number;
@@ -22,12 +22,23 @@ interface VSCodePublishedExtension extends PublishedExtension {
 }
 
 export class PublicGalleryAPI {
-	private readonly client = new HttpClient('vsce');
+	private readonly client = new HttpClient("vsce");
 
-	constructor(private baseUrl: string, private apiVersion = '3.0-preview.1') {}
+	constructor(
+		private baseUrl: string,
+		private apiVersion = "3.0-preview.1"
+	) {}
 
-	private post(url: string, data: string, additionalHeaders?: IHeaders): Promise<HttpClientResponse> {
-		return this.client.post(`${this.baseUrl}/_apis/public${url}`, data, additionalHeaders);
+	private post(
+		url: string,
+		data: string,
+		additionalHeaders?: IHeaders
+	): Promise<HttpClientResponse> {
+		return this.client.post(
+			`${this.baseUrl}/_apis/public${url}`,
+			data,
+			additionalHeaders
+		);
 	}
 
 	async extensionQuery({
@@ -43,9 +54,9 @@ export class PublicGalleryAPI {
 			flags: flags.reduce((memo, flag) => memo | flag, 0),
 		});
 
-		const res = await this.post('/gallery/extensionquery', data, {
+		const res = await this.post("/gallery/extensionquery", data, {
 			Accept: `application/json;api-version=${this.apiVersion}`,
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		});
 		const raw = JSON.parse(await res.readBody());
 
@@ -53,15 +64,35 @@ export class PublicGalleryAPI {
 			throw new Error(raw.message);
 		}
 
-		return ContractSerializer.deserialize(raw.results[0].extensions, TypeInfo.PublishedExtension, false, false);
+		return ContractSerializer.deserialize(
+			raw.results[0].extensions,
+			TypeInfo.PublishedExtension,
+			false,
+			false
+		);
 	}
 
-	async getExtension(extensionId: string, flags: ExtensionQueryFlags[] = []): Promise<PublishedExtension> {
-		const query = { criteria: [{ filterType: ExtensionQueryFilterType.Name, value: extensionId }], flags };
+	async getExtension(
+		extensionId: string,
+		flags: ExtensionQueryFlags[] = []
+	): Promise<PublishedExtension> {
+		const query = {
+			criteria: [
+				{
+					filterType: ExtensionQueryFilterType.Name,
+					value: extensionId,
+				},
+			],
+			flags,
+		};
 		const extensions = await this.extensionQuery(query);
 		return extensions.filter(
-			({ publisher: { publisherName: publisher }, extensionName: name }) =>
-				extensionId.toLowerCase() === `${publisher}.${name}`.toLowerCase()
+			({
+				publisher: { publisherName: publisher },
+				extensionName: name,
+			}) =>
+				extensionId.toLowerCase() ===
+				`${publisher}.${name}`.toLowerCase()
 		)[0];
 	}
 }
