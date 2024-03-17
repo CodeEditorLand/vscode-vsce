@@ -1,6 +1,6 @@
 {
-  "icon": "./icon.png",
   "name": "version",
+  "version": "1.0.0",
   "publisher": "joaomoreno",
-  "version": "1.0.0"
+  "icon": "./icon.png"
 }

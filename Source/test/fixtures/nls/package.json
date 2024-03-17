@@ -1,13 +1,27 @@
 {
-  "activationEvents": [
-    "onCommand:extension.pickNodeProcess",
-    "onCommand:extension.provideInitialConfigurations"
-  ],
+  "name": "node-debug",
+  "displayName": "Node Debug",
+  "version": "1.6.2",
+  "private": true,
+  "description": "%extension.description%",
+  "bugs": {
+    "url": "https://github.com/Microsoft/vscode-node-debug/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-node-debug.git"
+  },
+  "license": "MIT",
   "author": {
     "name": "Microsoft Corporation"
   },
-  "bugs": {
-    "url": "https://github.com/Microsoft/vscode-node-debug/issues"
+  "publisher": "ms-vscode",
+  "main": "./out/node/extension",
+  "scripts": {
+    "build": "node ./node_modules/gulp/bin/gulp.js build",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
+    "prepublish": "node ./node_modules/gulp/bin/gulp.js build"
   },
   "contributes": {
     "breakpoints": [
@@ -301,6 +315,10 @@
       }
     ]
   },
+  "activationEvents": [
+    "onCommand:extension.pickNodeProcess",
+    "onCommand:extension.provideInitialConfigurations"
+  ],
   "dependencies": {
     "glob": "7.0.6",
     "request-light": "0.1.0",
@@ -309,7 +327,6 @@
     "vscode-debugprotocol": "1.13.0-pre.5",
     "vscode-nls": "2.0.0"
   },
-  "description": "%extension.description%",
   "devDependencies": {
     "@types/es6-collections": "0.5.29",
     "@types/es6-promise": "0.0.32",
@@ -337,22 +354,5 @@
     "vscode": "0.11.18",
     "vscode-debugadapter-testsupport": "1.13.0-pre.3",
     "vscode-nls-dev": "2.0.0-beta.1"
-  },
-  "displayName": "Node Debug",
-  "license": "MIT",
-  "main": "./out/node/extension",
-  "name": "node-debug",
-  "private": true,
-  "publisher": "ms-vscode",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Microsoft/vscode-node-debug.git"
-  },
-  "scripts": {
-    "build": "node ./node_modules/gulp/bin/gulp.js build",
-    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "prepublish": "node ./node_modules/gulp/bin/gulp.js build"
-  },
-  "version": "1.6.2"
+  }
 }
