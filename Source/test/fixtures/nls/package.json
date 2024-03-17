@@ -1,27 +1,13 @@
 {
-  "name": "node-debug",
-  "displayName": "Node Debug",
-  "version": "1.6.2",
-  "private": true,
-  "description": "%extension.description%",
-  "bugs": {
-    "url": "https://github.com/Microsoft/vscode-node-debug/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Microsoft/vscode-node-debug.git"
-  },
-  "license": "MIT",
+  "activationEvents": [
+    "onCommand:extension.pickNodeProcess",
+    "onCommand:extension.provideInitialConfigurations"
+  ],
   "author": {
     "name": "Microsoft Corporation"
   },
-  "publisher": "ms-vscode",
-  "main": "./out/node/extension",
-  "scripts": {
-    "build": "node ./node_modules/gulp/bin/gulp.js build",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
-    "prepublish": "node ./node_modules/gulp/bin/gulp.js build"
+  "bugs": {
+    "url": "https://github.com/Microsoft/vscode-node-debug/issues"
   },
   "contributes": {
     "breakpoints": [
@@ -315,44 +301,58 @@
       }
     ]
   },
-  "activationEvents": [
-    "onCommand:extension.pickNodeProcess",
-    "onCommand:extension.provideInitialConfigurations"
-  ],
   "dependencies": {
-    "glob": "^7.0.6",
-    "request-light": "^0.1.0",
-    "source-map": "^0.5.3",
-    "vscode-debugadapter": "^1.13.0-pre.4",
-    "vscode-debugprotocol": "^1.13.0-pre.5",
-    "vscode-nls": "^2.0.0"
+    "glob": "7.0.6",
+    "request-light": "0.1.0",
+    "source-map": "0.5.3",
+    "vscode-debugadapter": "1.13.0-pre.4",
+    "vscode-debugprotocol": "1.13.0-pre.5",
+    "vscode-nls": "2.0.0"
   },
+  "description": "%extension.description%",
   "devDependencies": {
-    "@types/es6-collections": "^0.5.29",
+    "@types/es6-collections": "0.5.29",
     "@types/es6-promise": "0.0.32",
-    "@types/mocha": "^2.2.32",
-    "@types/node": "^6.0.39",
-    "@types/source-map": "^0.1.27",
+    "@types/mocha": "2.2.32",
+    "@types/node": "6.0.39",
+    "@types/source-map": "0.1.27",
     "del": "*",
     "git-rev-sync": "*",
-    "gulp": "^3.9.1",
+    "gulp": "3.9.1",
     "gulp-azure-storage": "*",
-    "gulp-filter": "^3.0.1",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-tsb": "^2.0.0",
-    "gulp-tslint": "^6.1.1",
-    "gulp-typescript": "^2.14.0",
-    "gulp-uglify": "^2.0.0",
-    "gulp-util": "^3.0.7",
+    "gulp-filter": "3.0.1",
+    "gulp-sourcemaps": "1.6.0",
+    "gulp-tsb": "2.0.0",
+    "gulp-tslint": "6.1.1",
+    "gulp-typescript": "2.14.0",
+    "gulp-uglify": "2.0.0",
+    "gulp-util": "3.0.7",
     "gulp-vinyl-zip": "*",
-    "mocha": "^2.4.5",
-    "nodemon": "^1.10.2",
+    "mocha": "2.4.5",
+    "nodemon": "1.10.2",
     "run-sequence": "*",
-    "tslint-microsoft-contrib": "^2.0.10",
-    "typescript": "^2.0.2",
-    "vsce": "^1.12.0",
-    "vscode": "^0.11.18",
-    "vscode-debugadapter-testsupport": "^1.13.0-pre.3",
-    "vscode-nls-dev": "^2.0.0-beta.1"
-  }
+    "tslint-microsoft-contrib": "2.0.10",
+    "typescript": "2.0.2",
+    "vsce": "1.12.0",
+    "vscode": "0.11.18",
+    "vscode-debugadapter-testsupport": "1.13.0-pre.3",
+    "vscode-nls-dev": "2.0.0-beta.1"
+  },
+  "displayName": "Node Debug",
+  "license": "MIT",
+  "main": "./out/node/extension",
+  "name": "node-debug",
+  "private": true,
+  "publisher": "ms-vscode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-node-debug.git"
+  },
+  "scripts": {
+    "build": "node ./node_modules/gulp/bin/gulp.js build",
+    "nodemon": "./node_modules/.bin/nodemon --debug --nolazy ./out/node/nodeDebug.js --server=4711",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "prepublish": "node ./node_modules/gulp/bin/gulp.js build"
+  },
+  "version": "1.6.2"
 }

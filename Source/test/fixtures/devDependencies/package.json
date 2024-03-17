@@ -1,11 +1,11 @@
 {
-  "name": "root-test-package",
-  "version": "1.0.0",
-  "publisher": "joaomoreno",
   "dependencies": {
     "real": "*"
   },
   "devDependencies": {
     "fake": "*"
-  }
+  },
+  "name": "root-test-package",
+  "publisher": "joaomoreno",
+  "version": "1.0.0"
 }
