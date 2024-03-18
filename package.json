@@ -2,41 +2,40 @@
 	"name": "@vscode/vsce",
 	"version": "0.0.0",
 	"description": "VS Code Extensions Manager",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vsce"
+	},
+	"homepage": "https://code.visualstudio.com",
+	"bugs": "https://github.com/Microsoft/vsce/issues",
 	"keywords": [
 		"vscode",
 		"vsce",
 		"extension"
 	],
-	"homepage": "https://code.visualstudio.com",
-	"bugs": "https://github.com/Microsoft/vsce/issues",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Microsoft/vsce"
+	"publishConfig": {
+		"access": "public"
 	},
-	"license": "MIT",
-	"author": "Microsoft Corporation",
 	"contributors": [
 		"Microsoft Corporation"
 	],
+	"author": "Microsoft Corporation",
+	"license": "MIT",
 	"main": "out/api.js",
 	"typings": "dist/vsce.d.ts",
 	"bin": {
 		"vsce": "vsce"
 	},
 	"scripts": {
+		"compile": "tsc",
 		"api": "api-extractor run --local --verbose",
 		"build": "npm run compile && npm run api",
-		"compile": "tsc",
-		"test": "mocha",
 		"watch:build": "npm run compile -- --watch",
+		"test": "mocha",
 		"watch:test": "npm run test -- --watch"
 	},
-	"mocha": {
-		"require": [
-			"ts-node/register"
-		],
-		"spec": "src/test/**/*.ts",
-		"watch-files": "src/**"
+	"engines": {
+		"node": ">= 14"
 	},
 	"dependencies": {
 		"azure-devops-node-api": "^11.0.1",
@@ -85,10 +84,11 @@
 	"optionalDependencies": {
 		"keytar": "^7.7.0"
 	},
-	"engines": {
-		"node": ">= 14"
-	},
-	"publishConfig": {
-		"access": "public"
+	"mocha": {
+		"require": [
+			"ts-node/register"
+		],
+		"watch-files": "src/**",
+		"spec": "src/test/**/*.ts"
 	}
 }
