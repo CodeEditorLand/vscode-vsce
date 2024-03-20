@@ -1,41 +1,45 @@
 {
 	"name": "@vscode/vsce",
-	"version": "0.0.0",
+	"version": "0.0.1",
+	"private": false,
 	"description": "VS Code Extensions Manager",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vsce"
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
 	},
-	"homepage": "https://code.visualstudio.com",
-	"bugs": "https://github.com/Microsoft/vsce/issues",
-	"keywords": [
-		"vscode",
-		"vsce",
-		"extension"
-	],
-	"publishConfig": {
-		"access": "public"
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
 	},
 	"contributors": [
 		"Microsoft Corporation"
 	],
-	"author": "Microsoft Corporation",
-	"license": "MIT",
+	"type": "module",
 	"main": "out/api.js",
 	"typings": "dist/vsce.d.ts",
 	"bin": {
 		"vsce": "vsce"
 	},
 	"scripts": {
-		"compile": "tsc",
 		"api": "api-extractor run --local --verbose",
 		"build": "npm run compile && npm run api",
+		"compile": "tsc",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
 		"watch:build": "npm run compile -- --watch",
-		"test": "mocha",
 		"watch:test": "npm run test -- --watch"
 	},
-	"engines": {
-		"node": ">= 14"
+	"mocha": {
+		"require": [
+			"ts-node/register"
+		],
+		"spec": "src/test/**/*.ts",
+		"watch-files": "src/**"
 	},
 	"dependencies": {
 		"azure-devops-node-api": "12.5.0",
@@ -79,16 +83,13 @@
 		"mocha": "10.3.0",
 		"source-map-support": "0.5.21",
 		"ts-node": "10.9.2",
-		"typescript": "5.4.2"
+		"typescript": "5.4.2",
+		"typescript-esbuild": "latest"
 	},
 	"optionalDependencies": {
 		"keytar": "7.9.0"
 	},
-	"mocha": {
-		"require": [
-			"ts-node/register"
-		],
-		"watch-files": "src/**",
-		"spec": "src/test/**/*.ts"
+	"publishConfig": {
+		"access": "public"
 	}
 }
