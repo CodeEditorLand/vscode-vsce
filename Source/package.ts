@@ -193,7 +193,6 @@ export interface VSIX {
 	extensionPack: string;
 	extensionKind: string;
 	localizedLanguages: string;
-	enabledApiProposals: string;
 	preRelease: boolean;
 	sponsorLink: string;
 	pricing: string;
@@ -542,7 +541,6 @@ export class ManifestProcessor extends BaseProcessor {
 						.map(loc => loc.localizedLanguageName ?? loc.languageName ?? loc.languageId)
 						.join(',')
 					: '',
-			enabledApiProposals: manifest.enabledApiProposals ? manifest.enabledApiProposals.join(',') : '',
 			preRelease: !!this.options.preRelease,
 			sponsorLink: manifest.sponsor?.url || '',
 		};
@@ -1463,7 +1461,6 @@ export async function toVsixManifest(vsix: VSIX): Promise<string> {
 				<Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value="${escape(vsix.extensionPack)}" />
 				<Property Id="Microsoft.VisualStudio.Code.ExtensionKind" Value="${escape(vsix.extensionKind)}" />
 				<Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="${escape(vsix.localizedLanguages)}" />
-				<Property Id="Microsoft.VisualStudio.Code.EnabledApiProposals" Value="${escape(vsix.enabledApiProposals)}" />
 				${vsix.preRelease ? `<Property Id="Microsoft.VisualStudio.Code.PreRelease" Value="${escape(vsix.preRelease)}" />` : ''}
 				${vsix.sponsorLink
 			? `<Property Id="Microsoft.VisualStudio.Code.SponsorLink" Value="${escape(vsix.sponsorLink)}" />`
