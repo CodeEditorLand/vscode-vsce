@@ -1,28 +1,10 @@
 {
-	"name": "@vscode/vsce",
-	"description": "VS Code Extensions Manager",
-	"contributors": [
-		"Microsoft Corporation"
-	],
-	"main": "out/api.js",
-	"typings": "dist/vsce.d.ts",
 	"bin": {
 		"vsce": "vsce"
 	},
-	"scripts": {
-		"api": "api-extractor run --local --verbose",
-		"build": "npm run compile && npm run api",
-		"compile": "tsc",
-		"watch:build": "npm run compile -- --watch",
-		"watch:test": "npm run test -- --watch"
-	},
-	"mocha": {
-		"require": [
-			"ts-node/register"
-		],
-		"spec": "src/test/**/*.ts",
-		"watch-files": "src/**"
-	},
+	"contributors": [
+		"Microsoft Corporation"
+	],
 	"dependencies": {
 		"@vscode/vsce-sign": "^2.0.0",
 		"chalk": "^2.4.2",
@@ -47,6 +29,7 @@
 		"yauzl": "^2.3.1",
 		"yazl": "^2.2.2"
 	},
+	"description": "VS Code Extensions Manager",
 	"devDependencies": {
 		"@types/cheerio": "^0.22.29",
 		"@types/glob": "^7.1.1",
@@ -64,7 +47,24 @@
 		"@types/yazl": "^2.4.2",
 		"source-map-support": "^0.4.2"
 	},
+	"main": "out/api.js",
+	"mocha": {
+		"require": [
+			"ts-node/register"
+		],
+		"spec": "src/test/**/*.ts",
+		"watch-files": "src/**"
+	},
+	"name": "@vscode/vsce",
 	"optionalDependencies": {
 		"keytar": "^7.7.0"
-	}
+	},
+	"scripts": {
+		"api": "api-extractor run --local --verbose",
+		"build": "npm run compile && npm run api",
+		"compile": "tsc",
+		"watch:build": "npm run compile -- --watch",
+		"watch:test": "npm run test -- --watch"
+	},
+	"typings": "dist/vsce.d.ts"
 }
