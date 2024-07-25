@@ -73,7 +73,6 @@ export interface IPublishOptions {
 	readonly preRelease?: boolean;
 	readonly allowStarActivation?: boolean;
 	readonly allowMissingRepository?: boolean;
-	readonly allowUnusedFilesPattern?: boolean;
 	readonly skipDuplicate?: boolean;
 	readonly skipLicense?: boolean;
 

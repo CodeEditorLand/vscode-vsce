@@ -153,7 +153,6 @@ export interface IPackageOptions {
 	readonly preRelease?: boolean;
 	readonly allowStarActivation?: boolean;
 	readonly allowMissingRepository?: boolean;
-	readonly allowUnusedFilesPattern?: boolean;
 	readonly skipLicense?: boolean;
 
 	readonly signTool?: string;
@@ -548,7 +547,6 @@ export class ManifestProcessor extends BaseProcessor {
 					: '',
 			enabledApiProposals: manifest.enabledApiProposals ? manifest.enabledApiProposals.join(',') : '',
 			preRelease: !!this.options.preRelease,
-			executesCode: !!(manifest.main ?? manifest.browser),
 			sponsorLink: manifest.sponsor?.url || '',
 		};
 
@@ -735,18 +733,16 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 	private gitHubIssueLinking: boolean;
 	private gitLabIssueLinking: boolean;
 
-	protected filesProcessed: number = 0;
-
 	constructor(
 		manifest: Manifest,
 		private name: string,
 		filePath: string,
 		private assetType: string,
-		protected options: IPackageOptions = {}
+		options: IPackageOptions = {}
 	) {
 		super(manifest);
 
-		this.regexp = new RegExp(`^${util.filePathToVsixPath(filePath)}$`, 'i');
+		this.regexp = new RegExp(`^extension/${filePath}$`, 'i');
 
 		const guess = this.guessBaseUrls(options.githubBranch || options.gitlabBranch);
 		this.baseContentUrl = options.baseContentUrl || (guess && guess.content);
@@ -765,7 +761,6 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 		if (!this.regexp.test(filePath)) {
 			return Promise.resolve(file);
 		}
-		this.filesProcessed++;
 
 		this.assets.push({ type: this.assetType, path: filePath });
 
@@ -967,13 +962,6 @@ export class ReadmeProcessor extends MarkdownProcessor {
 			options
 		);
 	}
-
-	override async onEnd(): Promise<void> {
-		if (this.options.readmePath && this.filesProcessed === 0) {
-			util.log.error(`The provided readme file (${this.options.readmePath}) could not be found.`);
-			process.exit(1);
-		}
-	}
 }
 
 export class ChangelogProcessor extends MarkdownProcessor {
@@ -985,13 +973,6 @@ export class ChangelogProcessor extends MarkdownProcessor {
 			'Microsoft.VisualStudio.Services.Content.Changelog',
 			options
 		);
-	}
-
-	override async onEnd(): Promise<void> {
-		if (this.options.changelogPath && this.filesProcessed === 0) {
-			util.log.error(`The provided changelog file (${this.options.changelogPath}) could not be found.`);
-			process.exit(1);
-		}
 	}
 }
 
@@ -1010,7 +991,7 @@ export class LicenseProcessor extends BaseProcessor {
 			this.filter = name => /^extension\/licen[cs]e(\.(md|txt))?$/i.test(name);
 		} else {
 			this.expectedLicenseName = match[1];
-			const regexp = new RegExp(`^${util.filePathToVsixPath(match[1])}$`);
+			const regexp = new RegExp('^extension/' + match[1] + '$');
 			this.filter = regexp.test.bind(regexp);
 		}
 
@@ -1089,7 +1070,7 @@ class IconProcessor extends BaseProcessor {
 	constructor(manifest: Manifest) {
 		super(manifest);
 
-		this.icon = manifest.icon && path.posix.normalize(util.filePathToVsixPath(manifest.icon));
+		this.icon = manifest.icon && path.posix.normalize(`extension/${manifest.icon}`);
 		delete this.vsix.icon;
 	}
 
@@ -1206,7 +1187,7 @@ export class NLSProcessor extends BaseProcessor {
 			for (const translation of localization.translations) {
 				if (translation.id === 'vscode' && !!translation.path) {
 					const translationPath = util.normalize(translation.path.replace(/^\.[\/\\]/, ''));
-					translations[localization.languageId.toUpperCase()] = util.filePathToVsixPath(translationPath);
+					translations[localization.languageId.toUpperCase()] = `extension/${translationPath}`;
 				}
 			}
 		}
@@ -1484,7 +1465,6 @@ export async function toVsixManifest(vsix: VSIX): Promise<string> {
 				<Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="${escape(vsix.localizedLanguages)}" />
 				<Property Id="Microsoft.VisualStudio.Code.EnabledApiProposals" Value="${escape(vsix.enabledApiProposals)}" />
 				${vsix.preRelease ? `<Property Id="Microsoft.VisualStudio.Code.PreRelease" Value="${escape(vsix.preRelease)}" />` : ''}
-				${vsix.executesCode ? `<Property Id="Microsoft.VisualStudio.Code.ExecutesCode" Value="${escape(vsix.executesCode)}" />` : ''}
 				${vsix.sponsorLink
 			? `<Property Id="Microsoft.VisualStudio.Code.SponsorLink" Value="${escape(vsix.sponsorLink)}" />`
 			: ''
@@ -1544,7 +1524,7 @@ export async function toVsixManifest(vsix: VSIX): Promise<string> {
 		</Installation>
 		<Dependencies/>
 		<Assets>
-			<Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="${util.filePathToVsixPath('package.json')}" Addressable="true" />
+			<Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
 			${vsix.assets
 			.map(asset => `<Asset Type="${escape(asset.type)}" Path="${escape(asset.path)}" Addressable="true" />`)
 			.join('\n')}
@@ -1613,6 +1593,8 @@ const defaultIgnore = [
 	'**/.vscode-test-web/**',
 ];
 
+const notIgnored = ['!package.json', '!README.md'];
+
 async function collectAllFiles(
 	cwd: string,
 	dependencies: 'npm' | 'yarn' | 'none' | undefined,
@@ -1648,12 +1630,8 @@ function collectFiles(
 	dependencies: 'npm' | 'yarn' | 'none' | undefined,
 	dependencyEntryPoints?: string[],
 	ignoreFile?: string,
-	manifestFileIncludes?: string[],
-	readmePath?: string,
+	manifestFileIncludes?: string[]
 ): Promise<string[]> {
-	readmePath = readmePath ?? 'README.md';
-	const notIgnored = ['!package.json', `!${readmePath}`];
-
 	return collectAllFiles(cwd, dependencies, dependencyEntryPoints).then(files => {
 		files = files.filter(f => !/\r$/m.test(f));
 
@@ -1761,8 +1739,8 @@ export function collect(manifest: Manifest, options: IPackageOptions = {}): Prom
 	const ignoreFile = options.ignoreFile || undefined;
 	const processors = createDefaultProcessors(manifest, options);
 
-	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile, manifest.files, options.readmePath).then(fileNames => {
-		const files = fileNames.map(f => ({ path: util.filePathToVsixPath(f), localPath: path.join(cwd, f) }));
+	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile, manifest.files).then(fileNames => {
+		const files = fileNames.map(f => ({ path: `extension/${f}`, localPath: path.join(cwd, f) }));
 
 		return processFiles(processors, files);
 	});
@@ -1851,7 +1829,7 @@ export async function pack(options: IPackageOptions = {}): Promise<IPackageResul
 	const manifest = await readManifest(cwd);
 	const files = await collect(manifest, options);
 
-	await printAndValidatePackagedFiles(files, cwd, manifest, options);
+	await printPackagedFiles(files, cwd, manifest, options);
 
 	if (options.version && !(options.updatePackageJson ?? true)) {
 		manifest.version = options.version;
@@ -1920,7 +1898,6 @@ export interface IListFilesOptions {
 	readonly ignoreFile?: string;
 	readonly dependencies?: boolean;
 	readonly prepublish?: boolean;
-	readonly readmePath?: string;
 }
 
 /**
@@ -1934,7 +1911,7 @@ export async function listFiles(options: IListFilesOptions = {}): Promise<string
 		await prepublish(cwd, manifest, options.useYarn);
 	}
 
-	return await collectFiles(cwd, getDependenciesOption(options), options.packagedDependencies, options.ignoreFile, manifest.files, options.readmePath);
+	return await collectFiles(cwd, getDependenciesOption(options), options.packagedDependencies, options.ignoreFile, manifest.files);
 }
 
 interface ILSOptions {
@@ -1943,7 +1920,6 @@ interface ILSOptions {
 	readonly packagedDependencies?: string[];
 	readonly ignoreFile?: string;
 	readonly dependencies?: boolean;
-	readonly readmePath?: string;
 }
 
 /**
@@ -1967,9 +1943,9 @@ export async function ls(options: ILSOptions = {}): Promise<void> {
 }
 
 /**
- * Prints the packaged files of an extension. And ensures .vscodeignore and files property in package.json are used correctly.
+ * Prints the packaged files of an extension.
  */
-export async function printAndValidatePackagedFiles(files: IFile[], cwd: string, manifest: Manifest, options: IPackageOptions): Promise<void> {
+export async function printPackagedFiles(files: IFile[], cwd: string, manifest: Manifest, options: IPackageOptions): Promise<void> {
 	// Warn if the extension contains a lot of files
 	const jsFiles = files.filter(f => /\.js$/i.test(f.path));
 	if (files.length > 5000 || jsFiles.length > 100) {
@@ -1981,37 +1957,14 @@ export async function printAndValidatePackagedFiles(files: IFile[], cwd: string,
 	}
 
 	// Warn if the extension does not have a .vscodeignore file or a files property in package.json
-	const hasIgnoreFile = fs.existsSync(options.ignoreFile ?? path.join(cwd, '.vscodeignore'));
-	if (!hasIgnoreFile && !manifest.files) {
-		let message = '';
-		message += `Neither a ${chalk.bold('.vscodeignore')} file nor a ${chalk.bold('"files"')} property in package.json was found. `;
-		message += `To ensure only necessary files are included in your extension, `;
-		message += `add a .vscodeignore file or specify the "files" property in package.json. More info: ${chalk.underline('https://aka.ms/vscode-vscodeignore')}\n`;
-		util.log.warn(message);
-	}
-	// Throw an error if the extension uses both a .vscodeignore file and the files property in package.json
-	else if (hasIgnoreFile && manifest.files !== undefined && manifest.files.length > 0) {
-		let message = '';
-		message += `Both a ${chalk.bold('.vscodeignore')} file and a ${chalk.bold('"files"')} property in package.json were found. `;
-		message += `VSCE does not support combining both strategies. `;
-		message += `Either remove the ${chalk.bold('.vscodeignore')} file or the ${chalk.bold('"files"')} property in package.json.`;
-		util.log.error(message);
-		process.exit(1);
-	}
-	// Throw an error if the extension uses the files property in package.json and 
-	// the package does not include at least one file for each include pattern
-	else if (manifest.files !== undefined && manifest.files.length > 0 && !options.allowUnusedFilesPattern) {
-		const originalFilePaths = files.map(f => util.vsixPathToFilePath(f.path));
-		const unusedIncludePatterns = manifest.files.filter(includePattern => !originalFilePaths.some(filePath => minimatch(filePath, includePattern, MinimatchOptions)));
-		if (unusedIncludePatterns.length > 0) {
+	if (!options.ignoreFile && !manifest.files) {
+		const hasDeaultIgnore = fs.existsSync(path.join(cwd, '.vscodeignore'));
+		if (!hasDeaultIgnore) {
 			let message = '';
-			message += `The following include patterns in the ${chalk.bold('"files"')} property in package.json do not match any files packaged in the extension:\n`;
-			message += unusedIncludePatterns.map(p => `  - ${p}`).join('\n');
-			message += '\nRemove any include pattern which is not needed.\n';
-			message += `\n=> Run ${chalk.bold('vsce ls --tree')} to see all included files.\n`;
-			message += `=> Use ${chalk.bold('--allow-unused-files-patterns')} to skip this check`;
-			util.log.error(message);
-			process.exit(1);
+			message += `Neither a ${chalk.bold('.vscodeignore')} file nor a ${chalk.bold('"files"')} property in package.json was found. `;
+			message += `To ensure only necessary files are included in your extension, `;
+			message += `add a .vscodeignore file or specify the "files" property in package.json. More info: ${chalk.underline('https://aka.ms/vscode-vscodeignore')}\n`;
+			util.log.warn(message);
 		}
 	}
 
@@ -2020,7 +1973,7 @@ export async function printAndValidatePackagedFiles(files: IFile[], cwd: string,
 		getDefaultPackageName(manifest, options),
 		files.map(f => ({
 			// File path relative to the extension root
-			origin: util.vsixPathToFilePath(f.path),
+			origin: f.path.startsWith('extension/') ? f.path.substring(10) : f.path,
 			// File path in the VSIX
 			tree: f.path
 		})),
