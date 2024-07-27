@@ -62,7 +62,7 @@ export interface Contributions {
 	readonly [contributionType: string]: any;
 }
 
-export type ExtensionKind = 'ui' | 'workspace' | 'web';
+export type ExtensionKind = "ui" | "workspace" | "web";
 
 export interface Manifest {
 	// mandatory (npm)
@@ -80,12 +80,12 @@ export interface Manifest {
 	galleryBanner?: { color?: string; theme?: string };
 	preview?: boolean;
 	badges?: { url: string; href: string; description: string }[];
-	markdown?: 'github' | 'standard';
+	markdown?: "github" | "standard";
 	_bundling?: { [name: string]: string }[];
 	_testing?: string;
 	enableProposedApi?: boolean;
 	enabledApiProposals?: readonly string[];
-	qna?: 'marketplace' | string | false;
+	qna?: "marketplace" | string | false;
 	extensionKind?: ExtensionKind | ExtensionKind[];
 	sponsor?: { url: string };
 
