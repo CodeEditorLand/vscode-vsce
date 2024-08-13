@@ -184,15 +184,10 @@ async function getYarnProductionDependencies(
 ): Promise<YarnDependency[]> {
 	const raw = await new Promise<string>((c, e) =>
 		cp.exec(
-			"yarn list --prod --json",
-			{
-				cwd,
-				encoding: "utf8",
-				env: { ...process.env },
-				maxBuffer: 5000 * 1024,
-			},
-			(err, stdout) => (err ? e(err) : c(stdout)),
-		),
+			'yarn list --prod --json',
+			{ cwd, encoding: 'utf8', env: { DISABLE_V8_COMPILE_CACHE: "1", ...process.env }, maxBuffer: 5000 * 1024 },
+			(err, stdout) => (err ? e(err) : c(stdout))
+		)
 	);
 	const match = /^{"type":"tree".*$/m.exec(raw);
 
