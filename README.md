@@ -13,7 +13,7 @@ on the VS Code website.
 
 ## Requirements
 
-[Node.js](https://nodejs.org/en/) at least `18.x.x`.
+[Node.js](https://nodejs.org/en/) at least `20.x.x`.
 
 ### Linux
 
