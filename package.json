@@ -5,24 +5,6 @@
 	"contributors": [
 		"Microsoft Corporation"
 	],
-	"author": "Microsoft Corporation",
-	"license": "MIT",
-	"main": "out/api.js",
-	"typings": "dist/vsce.d.ts",
-	"bin": {
-		"vsce": "vsce"
-	},
-	"scripts": {
-		"compile": "tsc",
-		"api": "api-extractor run --local --verbose",
-		"build": "npm run compile && npm run api",
-		"watch:build": "npm run compile -- --watch",
-		"test": "mocha",
-		"watch:test": "npm run test -- --watch"
-	},
-	"engines": {
-		"node": ">= 20"
-	},
 	"dependencies": {
 		"@vscode/vsce-sign": "2.0.4",
 		"chalk": "5.3.0",
@@ -70,7 +52,15 @@
 		"require": [
 			"ts-node/register"
 		],
-		"watch-files": "src/**",
-		"spec": "src/test/**/*.ts"
-	}
+		"spec": "src/test/**/*.ts",
+		"watch-files": "src/**"
+	},
+	"scripts": {
+		"api": "api-extractor run --local --verbose",
+		"build": "npm run compile && npm run api",
+		"compile": "tsc",
+		"watch:build": "npm run compile -- --watch",
+		"watch:test": "npm run test -- --watch"
+	},
+	"typings": "dist/vsce.d.ts"
 }
