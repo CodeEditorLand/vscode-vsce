@@ -1,26 +1,29 @@
 trigger:
-  batch: true
-  branches:
-    include:
-      - main
+    batch: true
+    branches:
+        include:
+            - main
 
 pr: [main]
 
 resources:
-  repositories:
-    - repository: templates
-      type: github
-      name: microsoft/vscode-engineering
-      ref: main
-      endpoint: Monaco
+    repositories:
+        - repository: templates
+          type: github
+          name: microsoft/vscode-engineering
+          ref: main
+          endpoint: Monaco
 
 parameters:
-  - name: nextVersion
-    displayName: '🚀 Release Version (eg: none, major, minor, patch, or X.X.X)'
-    type: string
-    default: 'none'
+    - name: nextVersion
+      displayName:
+          "🚀 Release Version (eg: none, major, minor, patch, or X.X.X)"
+      type: string
+      default: "none"
 
-name: "$(Date:yyyyMMdd).$(Rev:r)${{ replace(format(' (🚀 {0})', parameters.nextVersion), ' (🚀 none)', '') }}"
+name:
+    "$(Date:yyyyMMdd).$(Rev:r)${{ replace(format(' (🚀 {0})',
+    parameters.nextVersion), ' (🚀 none)', '') }}"
 
 extends:
   template: azure-pipelines/npm-package/pipeline.yml@templates

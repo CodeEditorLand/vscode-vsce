@@ -73,7 +73,6 @@ export interface IPublishOptions {
 	readonly preRelease?: boolean;
 	readonly allowStarActivation?: boolean;
 	readonly allowMissingRepository?: boolean;
-	readonly allowUnusedFilesPattern?: boolean;
 	readonly skipDuplicate?: boolean;
 	readonly skipLicense?: boolean;
 
@@ -86,16 +85,23 @@ export interface IPublishOptions {
 export async function publish(options: IPublishOptions = {}): Promise<any> {
 	if (options.packagePath) {
 		if (options.version) {
-			throw new Error(`Both options not supported simultaneously: 'packagePath' and 'version'.`);
+			throw new Error(
+				`Both options not supported simultaneously: 'packagePath' and 'version'.`,
+			);
 		} else if (options.targets) {
 			throw new Error(
-				`Both options not supported simultaneously: 'packagePath' and 'target'. Use 'vsce package --target <target>' to first create a platform specific package, then use 'vsce publish --packagePath <path>' to publish it.`
+				`Both options not supported simultaneously: 'packagePath' and 'target'. Use 'vsce package --target <target>' to first create a platform specific package, then use 'vsce publish --packagePath <path>' to publish it.`,
 			);
 		}
 
 		if (options.manifestPath || options.signaturePath) {
-			if (options.packagePath.length !== options.manifestPath?.length || options.packagePath.length !== options.signaturePath?.length) {
-				throw new Error(`Either all packages must be signed or none of them.`);
+			if (
+				options.packagePath.length !== options.manifestPath?.length ||
+				options.packagePath.length !== options.signaturePath?.length
+			) {
+				throw new Error(
+					`Either all packages must be signed or none of them.`,
+				);
 			}
 		}
 
@@ -105,7 +111,9 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			let target: string | undefined;
 
 			try {
-				target = vsix.xmlManifest.PackageManifest.Metadata[0].Identity[0].$.TargetPlatform ?? undefined;
+				target =
+					vsix.xmlManifest.PackageManifest.Metadata[0].Identity[0].$
+						.TargetPlatform ?? undefined;
 			} catch (err) {
 				throw new Error(`Invalid extension VSIX manifest. ${err}`);
 			}
@@ -113,15 +121,18 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			if (options.preRelease) {
 				let isPreReleasePackage = false;
 				try {
-					isPreReleasePackage = !!vsix.xmlManifest.PackageManifest.Metadata[0].Properties[0].Property.some(
-						p => p.$.Id === 'Microsoft.VisualStudio.Code.PreRelease'
-					);
+					isPreReleasePackage =
+						!!vsix.xmlManifest.PackageManifest.Metadata[0].Properties[0].Property.some(
+							(p) =>
+								p.$.Id ===
+								"Microsoft.VisualStudio.Code.PreRelease",
+						);
 				} catch (err) {
 					throw new Error(`Invalid extension VSIX manifest. ${err}`);
 				}
 				if (!isPreReleasePackage) {
 					throw new Error(
-						`Cannot use '--pre-release' flag with a package that was not packaged as pre-release. Please package it using the '--pre-release' flag and publish again.`
+						`Cannot use '--pre-release' flag with a package that was not packaged as pre-release. Please package it using the '--pre-release' flag and publish again.`,
 					);
 				}
 			}
@@ -129,8 +140,14 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			const manifestValidated = validateManifestForPublishing(vsix.manifest, options);
 
 			let sigzipPath: string | undefined;
-			if (options.manifestPath?.[index] && options.signaturePath?.[index]) {
-				sigzipPath = await createSignatureArchive(options.manifestPath[index], options.signaturePath[index]);
+			if (
+				options.manifestPath?.[index] &&
+				options.signaturePath?.[index]
+			) {
+				sigzipPath = await createSignatureArchive(
+					options.manifestPath[index],
+					options.signaturePath[index],
+				);
 			}
 
 			if (!sigzipPath) {
@@ -202,7 +219,7 @@ async function _publish(packagePath: string, sigzipPath: string | undefined, man
 				manifest.publisher,
 				manifest.name,
 				undefined,
-				ExtensionQueryFlags.IncludeVersions
+				ExtensionQueryFlags.IncludeVersions,
 			);
 		} catch (err: any) {
 			if (err.statusCode !== 404) {
@@ -211,29 +228,46 @@ async function _publish(packagePath: string, sigzipPath: string | undefined, man
 		}
 
 		if (extension && extension.versions) {
-			const versionExists = extension.versions.some(v =>
-				(v.version === manifest.version) &&
-				(v.targetPlatform === options.target));
+			const versionExists = extension.versions.some(
+				(v) =>
+					v.version === manifest.version &&
+					v.targetPlatform === options.target,
+			);
 
 			if (versionExists) {
 				if (options.skipDuplicate) {
-					log.done(`Version ${manifest.version} is already published. Skipping publish.`);
+					log.done(
+						`Version ${manifest.version} is already published. Skipping publish.`,
+					);
 					return;
 				} else {
 					throw new Error(`${description} already exists.`);
 				}
-
 			}
 
 			if (sigzipPath) {
-				await _publishSignedPackage(api, basename(packagePath), packageStream, basename(sigzipPath), fs.createReadStream(sigzipPath), manifest);
+				await _publishSignedPackage(
+					api,
+					basename(packagePath),
+					packageStream,
+					basename(sigzipPath),
+					fs.createReadStream(sigzipPath),
+					manifest,
+				);
 			} else {
 				try {
-					await api.updateExtension(undefined, packageStream, manifest.publisher, manifest.name);
+					await api.updateExtension(
+						undefined,
+						packageStream,
+						manifest.publisher,
+						manifest.name,
+					);
 				} catch (err: any) {
 					if (err.statusCode === 409) {
 						if (options.skipDuplicate) {
-							log.done(`Version ${manifest.version} is already published. Skipping publish.`);
+							log.done(
+								`Version ${manifest.version} is already published. Skipping publish.`,
+							);
 							return;
 						} else {
 							throw new Error(`${description} already exists.`);
@@ -245,13 +279,20 @@ async function _publish(packagePath: string, sigzipPath: string | undefined, man
 			}
 		} else {
 			if (sigzipPath) {
-				await _publishSignedPackage(api, basename(packagePath), packageStream, basename(sigzipPath), fs.createReadStream(sigzipPath), manifest);
+				await _publishSignedPackage(
+					api,
+					basename(packagePath),
+					packageStream,
+					basename(sigzipPath),
+					fs.createReadStream(sigzipPath),
+					manifest,
+				);
 			} else {
 				await api.createExtension(undefined, packageStream);
 			}
 		}
 	} catch (err: any) {
-		const message = (err && err.message) || '';
+		const message = (err && err.message) || "";
 
 		if (/Personal Access Token used has expired/.test(message)) {
 			err.message = `${err.message}\n\nYou're using an expired Personal Access Token, please get a new PAT.\nMore info: https://aka.ms/vscodepat`;
@@ -262,7 +303,9 @@ async function _publish(packagePath: string, sigzipPath: string | undefined, man
 		throw err;
 	}
 
-	log.info(`Extension URL (might take a few minutes): ${getPublishedUrl(name)}`);
+	log.info(
+		`Extension URL (might take a few minutes): ${getPublishedUrl(name)}`,
+	);
 	log.info(`Hub URL: ${getHubUrl(manifest.publisher, manifest.name)}`);
 	log.done(`Published ${description}.`);
 }
@@ -270,22 +313,31 @@ async function _publish(packagePath: string, sigzipPath: string | undefined, man
 async function _publishSignedPackage(api: GalleryApi, packageName: string, packageStream: fs.ReadStream, sigzipName: string, sigzipStream: fs.ReadStream, manifest: ManifestPublish) {
 	const extensionType = 'Visual Studio Code';
 	const form = new FormData();
-	const lineBreak = '\r\n';
-	form.setBoundary('0f411892-ef48-488f-89d3-4f0546e84723');
-	form.append('vsix', packageStream, {
-		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=vsix; filename=${packageName}${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`
+	const lineBreak = "\r\n";
+	form.setBoundary("0f411892-ef48-488f-89d3-4f0546e84723");
+	form.append("vsix", packageStream, {
+		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=vsix; filename=${packageName}${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`,
 	});
-	form.append('sigzip', sigzipStream, {
-		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=sigzip; filename=${sigzipName}${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`
+	form.append("sigzip", sigzipStream, {
+		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=sigzip; filename=${sigzipName}${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`,
 	});
 
-	const publishWithRetry = retry(handleWhen(err => err.message.includes('timeout')), {
-		maxAttempts: 3,
-		backoff: new IterableBackoff([5_000, 10_000, 20_000])
-	});
+	const publishWithRetry = retry(
+		handleWhen((err) => err.message.includes("timeout")),
+		{
+			maxAttempts: 3,
+			backoff: new IterableBackoff([5_000, 10_000, 20_000]),
+		},
+	);
 
 	return await publishWithRetry.execute(async () => {
-		return await api.publishExtensionWithPublisherSignature(undefined, form, manifest.publisher, manifest.name, extensionType);
+		return await api.publishExtensionWithPublisherSignature(
+			undefined,
+			form,
+			manifest.publisher,
+			manifest.name,
+			extensionType,
+		);
 	});
 }
 
@@ -298,7 +350,7 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 	let publisher: string, name: string;
 
 	if (options.id) {
-		[publisher, name] = options.id.split('.');
+		[publisher, name] = options.id.split(".");
 	} else {
 		const manifest = await readManifest(options.cwd);
 		publisher = validatePublisher(manifest.publisher);
@@ -308,10 +360,12 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 	const fullName = `${publisher}.${name}`;
 
 	if (!options.force) {
-		const answer = await read(`This will delete ALL published versions! Please type '${fullName}' to confirm: `);
+		const answer = await read(
+			`This will delete ALL published versions! Please type '${fullName}' to confirm: `,
+		);
 
 		if (answer !== fullName) {
-			throw new Error('Aborted');
+			throw new Error("Aborted");
 		}
 	}
 
@@ -325,24 +379,36 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 function validateManifestForPublishing(manifest: ManifestPackage, options: IInternalPublishOptions): ManifestPublish {
 	if (manifest.enableProposedApi && !options.allowAllProposedApis && !options.noVerify) {
 		throw new Error(
-			"Extensions using proposed API (enableProposedApi: true) can't be published to the Marketplace. Use --allow-all-proposed-apis to bypass. https://code.visualstudio.com/api/advanced-topics/using-proposed-api"
+			"Extensions using proposed API (enableProposedApi: true) can't be published to the Marketplace. Use --allow-all-proposed-apis to bypass. https://code.visualstudio.com/api/advanced-topics/using-proposed-api",
 		);
 	}
 
-	if (manifest.enabledApiProposals && !options.allowAllProposedApis && !options.noVerify && manifest.enabledApiProposals?.some(p => !options.allowProposedApis?.includes(p))) {
+	if (
+		manifest.enabledApiProposals &&
+		!options.allowAllProposedApis &&
+		!options.noVerify &&
+		manifest.enabledApiProposals?.some(
+			(p) => !options.allowProposedApis?.includes(p),
+		)
+	) {
 		throw new Error(
-			`Extensions using unallowed proposed API (enabledApiProposals: [${manifest.enabledApiProposals}], allowed: [${options.allowProposedApis ?? []}]) can't be published to the Marketplace. Use --allow-proposed-apis <APIS...> or --allow-all-proposed-apis to bypass. https://code.visualstudio.com/api/advanced-topics/using-proposed-api`
+			`Extensions using unallowed proposed API (enabledApiProposals: [${manifest.enabledApiProposals}], allowed: [${options.allowProposedApis ?? []}]) can't be published to the Marketplace. Use --allow-proposed-apis <APIS...> or --allow-all-proposed-apis to bypass. https://code.visualstudio.com/api/advanced-topics/using-proposed-api`,
 		);
 	}
 
 	if (semver.prerelease(manifest.version)) {
-		throw new Error(`The VS Marketplace doesn't support prerelease versions: '${manifest.version}'. Checkout our pre-release versioning recommendation here: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions`);
+		throw new Error(
+			`The VS Marketplace doesn't support prerelease versions: '${manifest.version}'. Checkout our pre-release versioning recommendation here: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions`,
+		);
 	}
 
 	return { ...manifest, publisher: validatePublisher(manifest.publisher) };
 }
 
-export async function getPAT(publisher: string, options: IPublishOptions | IUnpublishOptions | IVerifyPatOptions): Promise<string> {
+export async function getPAT(
+	publisher: string,
+	options: IPublishOptions | IUnpublishOptions | IVerifyPatOptions,
+): Promise<string> {
 	if (options.pat) {
 		return options.pat;
 	}

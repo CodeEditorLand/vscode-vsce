@@ -8,7 +8,7 @@ const regex = /^%([\w\d.]+)%$/i;
 
 function createPatcher(translations: ITranslations): <T>(value: T) => T {
 	return <T>(value: T): T => {
-		if (typeof value !== 'string') {
+		if (typeof value !== "string") {
 			return value;
 		}
 
@@ -29,5 +29,7 @@ function createPatcher(translations: ITranslations): <T>(value: T) => T {
 
 export function patchNLS(manifest: ManifestPackage, translations: ITranslations): ManifestPackage {
 	const patcher = createPatcher(translations);
-	return JSON.parse(JSON.stringify(manifest, (_, value: any) => patcher(value)));
+	return JSON.parse(
+		JSON.stringify(manifest, (_, value: any) => patcher(value)),
+	);
 }
