@@ -1,34 +1,31 @@
-import { Entry, open, ZipFile } from "yauzl";
-import { Manifest } from "./manifest";
-import { parseXmlManifest, XMLManifest } from "./xml";
-import { Readable } from "stream";
+import { Entry, open, ZipFile } from 'yauzl';
+import { ManifestPackage, UnverifiedManifest } from './manifest';
+import { parseXmlManifest, XMLManifest } from './xml';
+import { Readable } from 'stream';
+import { filePathToVsixPath } from './util';
+import { validateManifestForPackaging } from './package';
 
 async function bufferStream(stream: Readable): Promise<Buffer> {
 	return await new Promise((c, e) => {
 		const buffers: Buffer[] = [];
-		stream.on("data", (buffer) => buffers.push(buffer));
-		stream.once("error", e);
-		stream.once("end", () => c(Buffer.concat(buffers)));
+		stream.on('data', buffer => buffers.push(buffer));
+		stream.once('error', e);
+		stream.once('end', () => c(Buffer.concat(buffers)));
 	});
 }
 
-export async function readZip(
-	packagePath: string,
-	filter: (name: string) => boolean,
-): Promise<Map<string, Buffer>> {
+export async function readZip(packagePath: string, filter: (name: string) => boolean): Promise<Map<string, Buffer>> {
 	const zipfile = await new Promise<ZipFile>((c, e) =>
-		open(packagePath, { lazyEntries: true }, (err, zipfile) =>
-			err ? e(err) : c(zipfile!),
-		),
+		open(packagePath, { lazyEntries: true }, (err, zipfile) => (err ? e(err) : c(zipfile!)))
 	);
 
 	return await new Promise((c, e) => {
 		const result = new Map<string, Buffer>();
 
-		zipfile.once("close", () => c(result));
+		zipfile.once('close', () => c(result));
 
 		zipfile.readEntry();
-		zipfile.on("entry", (entry: Entry) => {
+		zipfile.on('entry', (entry: Entry) => {
 			const name = entry.fileName.toLowerCase();
 
 			if (filter(name)) {
@@ -38,7 +35,7 @@ export async function readZip(
 						return e(err);
 					}
 
-					bufferStream(stream!).then((buffer) => {
+					bufferStream(stream!).then(buffer => {
 						result.set(name, buffer);
 						zipfile.readEntry();
 					});
@@ -50,26 +47,30 @@ export async function readZip(
 	});
 }
 
-export async function readVSIXPackage(
-	packagePath: string,
-): Promise<{ manifest: Manifest; xmlManifest: XMLManifest }> {
-	const map = await readZip(packagePath, (name) =>
-		/^extension\/package\.json$|^extension\.vsixmanifest$/i.test(name),
-	);
-	const rawManifest = map.get("extension/package.json");
+export async function readVSIXPackage(packagePath: string): Promise<{ manifest: ManifestPackage; xmlManifest: XMLManifest }> {
+	const map = await readZip(packagePath, name => /^extension\/package\.json$|^extension\.vsixmanifest$/i.test(name));
+	const rawManifest = map.get(filePathToVsixPath('package.json'));
 
 	if (!rawManifest) {
-		throw new Error("Manifest not found");
+		throw new Error('Manifest not found');
 	}
 
-	const rawXmlManifest = map.get("extension.vsixmanifest");
+	const rawXmlManifest = map.get('extension.vsixmanifest');
 
 	if (!rawXmlManifest) {
-		throw new Error("VSIX manifest not found");
+		throw new Error('VSIX manifest not found');
+	}
+
+	const manifest = JSON.parse(rawManifest.toString('utf8')) as UnverifiedManifest;
+	let manifestValidated;
+	try {
+		manifestValidated = validateManifestForPackaging(manifest);
+	} catch (error) {
+		throw new Error(`Invalid extension VSIX manifest: ${error}`);
 	}
 
 	return {
-		manifest: JSON.parse(rawManifest.toString("utf8")),
-		xmlManifest: await parseXmlManifest(rawXmlManifest.toString("utf8")),
+		manifest: manifestValidated,
+		xmlManifest: await parseXmlManifest(rawXmlManifest.toString('utf8')),
 	};
 }
