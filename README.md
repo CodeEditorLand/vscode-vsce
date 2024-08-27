@@ -30,7 +30,7 @@ Depending on your distribution, you will need to run the following command:
 -   Red Hat-based: `sudo yum install libsecret-devel`
 -   Arch Linux: `sudo pacman -S libsecret`
 
-## Usage
+## 🛠️ Usage
 
 ```console
 $ npx @vscode/vsce --version
