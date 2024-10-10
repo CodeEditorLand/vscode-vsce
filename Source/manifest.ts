@@ -62,13 +62,13 @@ export interface Contributions {
 	readonly [contributionType: string]: any;
 }
 
-export type ExtensionKind = "ui" | "workspace" | "web";
+export type ExtensionKind = 'ui' | 'workspace' | 'web';
 
 export interface ManifestPackage {
 	// mandatory (npm)
 	name: string;
 	version: string;
-	engines: { vscode: string; [name: string]: string };
+	engines: { vscode: string;[name: string]: string };
 
 	// vscode
 	publisher?: string;
@@ -80,12 +80,12 @@ export interface ManifestPackage {
 	galleryBanner?: { color?: string; theme?: string };
 	preview?: boolean;
 	badges?: { url: string; href: string; description: string }[];
-	markdown?: "github" | "standard";
+	markdown?: 'github' | 'standard';
 	_bundling?: { [name: string]: string }[];
 	_testing?: string;
 	enableProposedApi?: boolean;
 	enabledApiProposals?: readonly string[];
-	qna?: "marketplace" | string | false;
+	qna?: 'marketplace' | string | false;
 	extensionKind?: ExtensionKind | ExtensionKind[];
 	sponsor?: { url: string };
 

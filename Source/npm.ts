@@ -1,14 +1,13 @@
-import * as cp from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-import parseSemver from "parse-semver";
-
-import { CancellationToken, log, nonnull } from "./util";
+import * as path from 'path';
+import * as fs from 'fs';
+import * as cp from 'child_process';
+import parseSemver from 'parse-semver';
+import { CancellationToken, log, nonnull } from './util';
 
 const exists = (file: string) =>
 	fs.promises.stat(file).then(
-		(_) => true,
-		(_) => false,
+		_ => true,
+		_ => false
 	);
 
 interface IOptions {
@@ -22,66 +21,53 @@ interface IOptions {
 }
 
 function parseStdout({ stdout }: { stdout: string }): string {
-	return stdout.split(/[\r\n]/).filter((line) => !!line)[0];
+	return stdout.split(/[\r\n]/).filter(line => !!line)[0];
 }
 
 function exec(
 	command: string,
 	options: IOptions = {},
-	cancellationToken?: CancellationToken,
+	cancellationToken?: CancellationToken
 ): Promise<{ stdout: string; stderr: string }> {
 	return new Promise((c, e) => {
 		let disposeCancellationListener: Function | null = null;
 
-		const child = cp.exec(
-			command,
-			{ ...options, encoding: "utf8" } as any,
-			(err, stdout: string, stderr: string) => {
-				if (disposeCancellationListener) {
-					disposeCancellationListener();
-					disposeCancellationListener = null;
-				}
+		const child = cp.exec(command, { ...options, encoding: 'utf8' } as any, (err, stdout: string, stderr: string) => {
+			if (disposeCancellationListener) {
+				disposeCancellationListener();
+				disposeCancellationListener = null;
+			}
 
-				if (err) {
-					return e(err);
-				}
-				c({ stdout, stderr });
-			},
-		);
+			if (err) {
+				return e(err);
+			}
+			c({ stdout, stderr });
+		});
 
 		if (cancellationToken) {
-			disposeCancellationListener = cancellationToken.subscribe(
-				(err: any) => {
-					child.kill();
-					e(err);
-				},
-			);
+			disposeCancellationListener = cancellationToken.subscribe((err: any) => {
+				child.kill();
+				e(err);
+			});
 		}
 	});
 }
 
 async function checkNPM(cancellationToken?: CancellationToken): Promise<void> {
-	const { stdout } = await exec("npm -v", {}, cancellationToken);
+	const { stdout } = await exec('npm -v', {}, cancellationToken);
 	const version = stdout.trim();
 
 	if (/^3\.7\.[0123]$/.test(version)) {
-		throw new Error(
-			`npm@${version} doesn't work with vsce. Please update npm: npm install -g npm`,
-		);
+		throw new Error(`npm@${version} doesn't work with vsce. Please update npm: npm install -g npm`);
 	}
 }
 
 function getNpmDependencies(cwd: string): Promise<string[]> {
 	return checkNPM()
 		.then(() =>
-			exec(
-				"npm list --production --parseable --depth=99999 --loglevel=error",
-				{ cwd, maxBuffer: 5000 * 1024 },
-			),
+			exec('npm list --production --parseable --depth=99999 --loglevel=error', { cwd, maxBuffer: 5000 * 1024 })
 		)
-		.then(({ stdout }) =>
-			stdout.split(/[\r\n]/).filter((dir) => path.isAbsolute(dir)),
-		);
+		.then(({ stdout }) => stdout.split(/[\r\n]/).filter(dir => path.isAbsolute(dir)));
 }
 
 interface YarnTreeNode {
@@ -95,11 +81,7 @@ export interface YarnDependency {
 	children: YarnDependency[];
 }
 
-function asYarnDependency(
-	prefix: string,
-	tree: YarnTreeNode,
-	prune: boolean,
-): YarnDependency | null {
+function asYarnDependency(prefix: string, tree: YarnTreeNode, prune: boolean): YarnDependency | null {
 	if (prune && /@[\^~]/.test(tree.name)) {
 		return null;
 	}
@@ -110,18 +92,14 @@ function asYarnDependency(
 		const parseResult = parseSemver(tree.name);
 		name = parseResult.name;
 	} catch (err) {
-		name = tree.name.replace(/^([^@+])@.*$/, "$1");
+		name = tree.name.replace(/^([^@+])@.*$/, '$1');
 	}
 
 	const dependencyPath = path.join(prefix, name);
 	const children: YarnDependency[] = [];
 
 	for (const child of tree.children || []) {
-		const dep = asYarnDependency(
-			path.join(prefix, name, "node_modules"),
-			child,
-			prune,
-		);
+		const dep = asYarnDependency(path.join(prefix, name, 'node_modules'), child, prune);
 
 		if (dep) {
 			children.push(dep);
@@ -131,10 +109,7 @@ function asYarnDependency(
 	return { name, path: dependencyPath, children };
 }
 
-function selectYarnDependencies(
-	deps: YarnDependency[],
-	packagedDependencies: string[],
-): YarnDependency[] {
+function selectYarnDependencies(deps: YarnDependency[], packagedDependencies: string[]): YarnDependency[] {
 	const index = new (class {
 		private data: { [name: string]: YarnDependency } = Object.create(null);
 		constructor() {
@@ -179,39 +154,25 @@ function selectYarnDependencies(
 	return reached.values;
 }
 
-async function getYarnProductionDependencies(
-	cwd: string,
-	packagedDependencies?: string[],
-): Promise<YarnDependency[]> {
+async function getYarnProductionDependencies(cwd: string, packagedDependencies?: string[]): Promise<YarnDependency[]> {
 	const raw = await new Promise<string>((c, e) =>
 		cp.exec(
-			"yarn list --prod --json",
-			{
-				cwd,
-				encoding: "utf8",
-				env: { DISABLE_V8_COMPILE_CACHE: "1", ...process.env },
-				maxBuffer: 5000 * 1024,
-			},
-			(err, stdout) => (err ? e(err) : c(stdout)),
-		),
+			'yarn list --prod --json',
+			{ cwd, encoding: 'utf8', env: { DISABLE_V8_COMPILE_CACHE: "1", ...process.env }, maxBuffer: 5000 * 1024 },
+			(err, stdout) => (err ? e(err) : c(stdout))
+		)
 	);
 	const match = /^{"type":"tree".*$/m.exec(raw);
 
 	if (!match || match.length !== 1) {
-		throw new Error("Could not parse result of `yarn list --json`");
+		throw new Error('Could not parse result of `yarn list --json`');
 	}
 
 	const usingPackagedDependencies = Array.isArray(packagedDependencies);
 	const trees = JSON.parse(match[0]).data.trees as YarnTreeNode[];
 
 	let result = trees
-		.map((tree) =>
-			asYarnDependency(
-				path.join(cwd, "node_modules"),
-				tree,
-				!usingPackagedDependencies,
-			),
-		)
+		.map(tree => asYarnDependency(path.join(cwd, 'node_modules'), tree, !usingPackagedDependencies))
 		.filter(nonnull);
 
 	if (usingPackagedDependencies) {
@@ -221,10 +182,7 @@ async function getYarnProductionDependencies(
 	return result;
 }
 
-async function getYarnDependencies(
-	cwd: string,
-	packagedDependencies?: string[],
-): Promise<string[]> {
+async function getYarnDependencies(cwd: string, packagedDependencies?: string[]): Promise<string[]> {
 	const result = new Set([cwd]);
 
 	const deps = await getYarnProductionDependencies(cwd, packagedDependencies);
@@ -238,17 +196,11 @@ async function getYarnDependencies(
 }
 
 export async function detectYarn(cwd: string): Promise<boolean> {
-	for (const name of [
-		"yarn.lock",
-		".yarnrc",
-		".yarnrc.yaml",
-		".pnp.cjs",
-		".yarn",
-	]) {
+	for (const name of ['yarn.lock', '.yarnrc', '.yarnrc.yaml', '.pnp.cjs', '.yarn']) {
 		if (await exists(path.join(cwd, name))) {
-			if (!process.env["VSCE_TESTS"]) {
+			if (!process.env['VSCE_TESTS']) {
 				log.info(
-					`Detected presence of ${name}. Using 'yarn' instead of 'npm' (to override this pass '--no-yarn' on the command line).`,
+					`Detected presence of ${name}. Using 'yarn' instead of 'npm' (to override this pass '--no-yarn' on the command line).`
 				);
 			}
 			return true;
@@ -259,25 +211,19 @@ export async function detectYarn(cwd: string): Promise<boolean> {
 
 export async function getDependencies(
 	cwd: string,
-	dependencies: "npm" | "yarn" | "none" | undefined,
-	packagedDependencies?: string[],
+	dependencies: 'npm' | 'yarn' | 'none' | undefined,
+	packagedDependencies?: string[]
 ): Promise<string[]> {
-	if (dependencies === "none") {
+	if (dependencies === 'none') {
 		return [cwd];
-	} else if (
-		dependencies === "yarn" ||
-		(dependencies === undefined && (await detectYarn(cwd)))
-	) {
+	} else if (dependencies === 'yarn' || (dependencies === undefined && (await detectYarn(cwd)))) {
 		return await getYarnDependencies(cwd, packagedDependencies);
 	} else {
 		return await getNpmDependencies(cwd);
 	}
 }
 
-export function getLatestVersion(
-	name: string,
-	cancellationToken?: CancellationToken,
-): Promise<string> {
+export function getLatestVersion(name: string, cancellationToken?: CancellationToken): Promise<string> {
 	return checkNPM(cancellationToken)
 		.then(() => exec(`npm show ${name} version`, {}, cancellationToken))
 		.then(parseStdout);

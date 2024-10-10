@@ -1,4 +1,4 @@
-declare module "parse-semver" {
+declare module 'parse-semver' {
 	interface Result {
 		readonly name: string;
 		readonly version: string;
