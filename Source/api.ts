@@ -1,9 +1,5 @@
-import {
-	listFiles as _listFiles,
-	IPackageOptions,
-	packageCommand,
-} from "./package";
-import { publish as _publish, IPublishOptions } from "./publish";
+import { publish as _publish, IPublishOptions, unpublish as _unpublish, IUnpublishOptions } from './publish';
+import { packageCommand, listFiles as _listFiles, IPackageOptions } from './package';
 
 /**
  * @deprecated prefer IPackageOptions instead
@@ -122,4 +118,18 @@ export function publishVSIX(
 			typeof options.target === "string" ? [options.target] : undefined,
 		...{ target: undefined },
 	});
+}
+
+/**
+ * Options for the `unpublishVSIX` function.
+ * @public
+ */
+export type IUnpublishVSIXOptions = IPublishOptions & Pick<IUnpublishOptions, 'id'>;
+
+/**
+ * Deletes a specific extension from the marketplace.
+ * @public
+ */
+export function unpublishVSIX(options: IUnpublishVSIXOptions = {}): Promise<any> {
+	return _unpublish({ force: true, ...options });
 }

@@ -740,27 +740,15 @@ export class TagsProcessor extends BaseProcessor {
 			return obj && obj.length > 0;
 		};
 
-		const colorThemes = doesContribute("themes")
-			? ["theme", "color-theme"]
-			: [];
-		const iconThemes = doesContribute("iconThemes")
-			? ["theme", "icon-theme"]
-			: [];
-		const productIconThemes = doesContribute("productIconThemes")
-			? ["theme", "product-icon-theme"]
-			: [];
-		const snippets = doesContribute("snippets") ? ["snippet"] : [];
-		const keybindings = doesContribute("keybindings")
-			? ["keybindings"]
-			: [];
-		const debuggers = doesContribute("debuggers") ? ["debuggers"] : [];
-		const json = doesContribute("jsonValidation") ? ["json"] : [];
-		const remoteMenu = doesContribute("menus", "statusBar/remoteIndicator")
-			? ["remote-menu"]
-			: [];
-		const chatParticipants = doesContribute("chatParticipants")
-			? ["chat-participant"]
-			: [];
+		const colorThemes = doesContribute('themes') ? ['theme', 'color-theme'] : [];
+		const iconThemes = doesContribute('iconThemes') ? ['theme', 'icon-theme'] : [];
+		const productIconThemes = doesContribute('productIconThemes') ? ['theme', 'product-icon-theme'] : [];
+		const snippets = doesContribute('snippets') ? ['snippet'] : [];
+		const keybindings = doesContribute('keybindings') ? ['keybindings'] : [];
+		const debuggers = doesContribute('debuggers') ? ['debuggers'] : [];
+		const json = doesContribute('jsonValidation') ? ['json'] : [];
+		const remoteMenu = doesContribute('menus', 'statusBar/remoteIndicator') ? ['remote-menu'] : [];
+		const chatParticipants = doesContribute('chatParticipants') ? ['chat-participant'] : [];
 
 		const localizationContributions = (
 			(contributes && contributes["localizations"]) ??
@@ -1945,27 +1933,15 @@ const defaultIgnore = [
 
 async function collectAllFiles(
 	cwd: string,
-	dependencies: "npm" | "yarn" | "none" | undefined,
+	dependencies: 'npm' | 'yarn' | 'none' | undefined,
 	dependencyEntryPoints?: string[],
 	followSymlinks: boolean = true,
 ): Promise<string[]> {
-	const deps = await getDependencies(
-		cwd,
-		dependencies,
-		dependencyEntryPoints,
-	);
-	const promises = deps.map((dep) =>
-		glob("**", {
-			cwd: dep,
-			nodir: true,
-			follow: followSymlinks,
-			dot: true,
-			ignore: "node_modules/**",
-		}).then((files) =>
-			files
-				.map((f) => path.relative(cwd, path.join(dep, f)))
-				.map((f) => f.replace(/\\/g, "/")),
-		),
+	const deps = await getDependencies(cwd, dependencies, dependencyEntryPoints);
+	const promises = deps.map(dep =>
+		glob('**', { cwd: dep, nodir: true, follow: followSymlinks, dot: true, ignore: 'node_modules/**' }).then(files =>
+			files.map(f => path.relative(cwd, path.join(dep, f))).map(f => f.replace(/\\/g, '/'))
+		)
 	);
 
 	return Promise.all(promises).then(util.flatten);
@@ -1995,41 +1971,28 @@ function collectFiles(
 	ignoreFile?: string,
 	manifestFileIncludes?: string[],
 	readmePath?: string,
-	followSymlinks: boolean = false,
+	followSymlinks:boolean = false
 ): Promise<string[]> {
 	readmePath = readmePath ?? "README.md";
 	const notIgnored = ["!package.json", `!${readmePath}`];
 
-	return collectAllFiles(
-		cwd,
-		dependencies,
-		dependencyEntryPoints,
-		followSymlinks,
-	).then((files) => {
-		files = files.filter((f) => !/\r$/m.test(f));
+	return collectAllFiles(cwd, dependencies, dependencyEntryPoints, followSymlinks).then(files => {
+		files = files.filter(f => !/\r$/m.test(f));
 
 		return (
 			fs.promises
-				.readFile(
-					ignoreFile ? ignoreFile : path.join(cwd, ".vscodeignore"),
-					"utf8",
-				)
-				.catch<string>((err) =>
-					err.code !== "ENOENT"
-						? Promise.reject(err)
-						: ignoreFile
-							? Promise.reject(err)
-							: // No .vscodeignore file exists
-								manifestFileIncludes
-								? // include all files in manifestFileIncludes and ignore the rest
-									Promise.resolve(
-										manifestFileIncludes
-											.map((file) => `!${file}`)
-											.concat(["**"])
-											.join("\n\r"),
-									)
-								: // "files" property not used in package.json
-									Promise.resolve(""),
+				.readFile(ignoreFile ? ignoreFile : path.join(cwd, '.vscodeignore'), 'utf8')
+				.catch<string>(err =>
+					err.code !== 'ENOENT' ?
+						Promise.reject(err) :
+						ignoreFile ?
+							Promise.reject(err) :
+							// No .vscodeignore file exists
+							manifestFileIncludes ?
+								// include all files in manifestFileIncludes and ignore the rest
+								Promise.resolve(manifestFileIncludes.map(file => `!${file}`).concat(['**']).join('\n\r')) :
+								// "files" property not used in package.json
+								Promise.resolve('')
 				)
 
 				// Parse raw ignore by splitting output into lines and filtering out empty lines and comments
@@ -2159,19 +2122,8 @@ export function collect(
 	const ignoreFile = options.ignoreFile || undefined;
 	const processors = createDefaultProcessors(manifest, options);
 
-	return collectFiles(
-		cwd,
-		getDependenciesOption(options),
-		packagedDependencies,
-		ignoreFile,
-		manifest.files,
-		options.readmePath,
-		options.followSymlinks,
-	).then((fileNames) => {
-		const files = fileNames.map((f) => ({
-			path: util.filePathToVsixPath(f),
-			localPath: path.join(cwd, f),
-		}));
+	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile, manifest.files, options.readmePath, options.followSymlinks).then(fileNames => {
+		const files = fileNames.map(f => ({ path: util.filePathToVsixPath(f), localPath: path.join(cwd, f) }));
 
 		return processFiles(processors, files);
 	});
@@ -2426,15 +2378,7 @@ export async function listFiles(
 		await prepublish(cwd, manifest, options.useYarn);
 	}
 
-	return await collectFiles(
-		cwd,
-		getDependenciesOption(options),
-		options.packagedDependencies,
-		options.ignoreFile,
-		manifest.files,
-		options.readmePath,
-		options.followSymlinks,
-	);
+	return await collectFiles(cwd, getDependenciesOption(options), options.packagedDependencies, options.ignoreFile, manifest.files, options.readmePath, options.followSymlinks);
 }
 
 interface ILSOptions {
