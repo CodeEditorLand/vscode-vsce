@@ -38,6 +38,7 @@ export async function readZip(
 				zipfile.openReadStream(entry, (err, stream) => {
 					if (err) {
 						zipfile.close();
+
 						return e(err);
 					}
 
@@ -59,6 +60,7 @@ export async function readVSIXPackage(
 	const map = await readZip(packagePath, (name) =>
 		/^extension\/package\.json$|^extension\.vsixmanifest$/i.test(name),
 	);
+
 	const rawManifest = map.get(filePathToVsixPath("package.json"));
 
 	if (!rawManifest) {
@@ -74,7 +76,9 @@ export async function readVSIXPackage(
 	const manifest = JSON.parse(
 		rawManifest.toString("utf8"),
 	) as UnverifiedManifest;
+
 	let manifestValidated;
+
 	try {
 		manifestValidated = validateManifestForPackaging(manifest);
 	} catch (error) {

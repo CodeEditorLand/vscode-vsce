@@ -62,6 +62,7 @@ function exec(
 
 async function checkNPM(cancellationToken?: CancellationToken): Promise<void> {
 	const { stdout } = await exec("npm -v", {}, cancellationToken);
+
 	const version = stdout.trim();
 
 	if (/^3\.7\.[0123]$/.test(version)) {
@@ -114,6 +115,7 @@ function asYarnDependency(
 	}
 
 	const dependencyPath = path.join(prefix, name);
+
 	const children: YarnDependency[] = [];
 
 	for (const child of tree.children || []) {
@@ -137,6 +139,7 @@ function selectYarnDependencies(
 ): YarnDependency[] {
 	const index = new (class {
 		private data: { [name: string]: YarnDependency } = Object.create(null);
+
 		constructor() {
 			for (const dep of deps) {
 				if (this.data[dep.name]) {
@@ -147,6 +150,7 @@ function selectYarnDependencies(
 		}
 		find(name: string): YarnDependency {
 			let result = this.data[name];
+
 			if (!result) {
 				throw new Error(`Could not find dependency: ${name}`);
 			}
@@ -159,6 +163,7 @@ function selectYarnDependencies(
 		add(dep: YarnDependency): boolean {
 			if (this.values.indexOf(dep) < 0) {
 				this.values.push(dep);
+
 				return true;
 			}
 			return false;
@@ -167,6 +172,7 @@ function selectYarnDependencies(
 
 	const visit = (name: string) => {
 		let dep = index.find(name);
+
 		if (!reached.add(dep)) {
 			// already seen -> done
 			return;
@@ -176,6 +182,7 @@ function selectYarnDependencies(
 		}
 	};
 	packagedDependencies.forEach(visit);
+
 	return reached.values;
 }
 
@@ -195,6 +202,7 @@ async function getYarnProductionDependencies(
 			(err, stdout) => (err ? e(err) : c(stdout)),
 		),
 	);
+
 	const match = /^{"type":"tree".*$/m.exec(raw);
 
 	if (!match || match.length !== 1) {
@@ -202,6 +210,7 @@ async function getYarnProductionDependencies(
 	}
 
 	const usingPackagedDependencies = Array.isArray(packagedDependencies);
+
 	const trees = JSON.parse(match[0]).data.trees as YarnTreeNode[];
 
 	let result = trees
@@ -228,6 +237,7 @@ async function getYarnDependencies(
 	const result = new Set([cwd]);
 
 	const deps = await getYarnProductionDependencies(cwd, packagedDependencies);
+
 	const flatten = (dep: YarnDependency) => {
 		result.add(dep.path);
 		dep.children.forEach(flatten);

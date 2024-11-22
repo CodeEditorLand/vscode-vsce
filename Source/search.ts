@@ -10,6 +10,7 @@ import { getPublicGalleryAPI } from "./util";
 import { ratingStars, tableView, wordTrim } from "./viewutils";
 
 const installationTarget = "Microsoft.VisualStudio.Code";
+
 const excludeFlags = "37888"; //Value to exclude un-published, locked or hidden extensions
 
 const baseResultsTableHeaders = ["<ExtensionId>", "<Publisher>", "<Name>"];
@@ -24,6 +25,7 @@ export async function search(
 	stats: boolean = false,
 ): Promise<any> {
 	const api = getPublicGalleryAPI();
+
 	const results = (await api.extensionQuery({
 		pageSize,
 		criteria: [
@@ -59,16 +61,19 @@ export async function search(
 				.map((line) => wordTrim(line.replace(/\s+$/g, "")))
 				.join("\n"),
 		);
+
 		return;
 	}
 
 	if (!results.length) {
 		console.log("No matching results");
+
 		return;
 	}
 
 	if (json) {
 		console.log(JSON.stringify(results, undefined, "\t"));
+
 		return;
 	}
 }

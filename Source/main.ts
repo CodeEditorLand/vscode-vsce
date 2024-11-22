@@ -388,6 +388,7 @@ module.exports = function (argv: string[]): void {
 
 		program.outputHelp(help => {
 			const availableCommands = program.commands.map(c => c._name);
+
 			const suggestion = availableCommands.find(c => leven(c, cmd) < c.length * 0.4);
 
 			help = `${help}\n Unknown command '${cmd}'`;

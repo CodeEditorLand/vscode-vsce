@@ -58,6 +58,7 @@ export class PublicGalleryAPI {
 			Accept: `application/json;api-version=${this.apiVersion}`,
 			"Content-Type": "application/json",
 		});
+
 		const raw = JSON.parse(await res.readBody());
 
 		if (raw.errorCode !== undefined) {
@@ -85,7 +86,9 @@ export class PublicGalleryAPI {
 			],
 			flags,
 		};
+
 		const extensions = await this.extensionQuery(query);
+
 		return extensions.filter(
 			({
 				publisher: { publisherName: publisher },

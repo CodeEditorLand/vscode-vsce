@@ -2,6 +2,7 @@ export type ViewTableRow = string[];
 export type ViewTable = ViewTableRow[];
 
 const fixedLocale = "en-us";
+
 const format = {
 	date: {
 		month: "long",
@@ -37,6 +38,7 @@ export function formatDateTime(date: Date) {
 
 export function repeatString(text: string, count: number): string {
 	let result: string = "";
+
 	for (let i = 0; i < count; i++) {
 		result += text;
 	}
@@ -45,6 +47,7 @@ export function repeatString(text: string, count: number): string {
 
 export function ratingStars(rating: number, total = 5): string {
 	const c = Math.min(Math.round(rating), total);
+
 	return `${repeatString(icons.star + " ", c)}${repeatString(icons.emptyStar + " ", total - c)}`;
 }
 
@@ -55,6 +58,7 @@ export function tableView(table: ViewTable, spacing: number = 2): string[] {
 			(cell, i) => (maxLen[i] = Math.max(maxLen[i] || 0, cell.length)),
 		),
 	);
+
 	return table.map((row) =>
 		row
 			.map(
@@ -67,14 +71,18 @@ export function tableView(table: ViewTable, spacing: number = 2): string[] {
 
 export function wordWrap(text: string, width: number = columns): string {
 	const [indent = ""] = text.match(/^\s+/) || [];
+
 	const maxWidth = width - indent.length;
+
 	return text
 		.replace(/^\s+/, "")
 		.split("")
 		.reduce(
 			([out, buffer, pos], ch) => {
 				const nl = pos === maxWidth ? `\n${indent}` : "";
+
 				const newPos: number = nl ? 0 : +pos + 1;
+
 				return / |-|,|\./.test(ch)
 					? [`${out}${buffer}${ch}${nl}`, "", newPos]
 					: [`${out}${nl}`, buffer + ch, newPos];

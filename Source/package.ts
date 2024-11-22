@@ -218,6 +218,7 @@ export class BaseProcessor implements IProcessor {
 	assets: IAsset[] = [];
 	tags: string[] = [];
 	vsix: VSIX = Object.create(null);
+
 	async onFile(file: IFile): Promise<IFile> {
 		return file;
 	}
@@ -229,6 +230,7 @@ export class BaseProcessor implements IProcessor {
 // https://github.com/npm/cli/blob/latest/lib/utils/hosted-git-info-from-manifest.js
 function getGitHost(manifest: ManifestPackage): GitHost | undefined {
 	const url = getRepositoryUrl(manifest);
+
 	return url ? GitHost.fromUrl(url, { noGitPlus: true }) : undefined;
 }
 
@@ -407,6 +409,7 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 	}
 
 	const cwd = options.cwd ?? process.cwd();
+
 	const manifest = await readManifest(cwd);
 
 	if (manifest.version === options.version) {
@@ -418,12 +421,14 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 		case "minor":
 		case "patch":
 			break;
+
 		case "premajor":
 		case "preminor":
 		case "prepatch":
 		case "prerelease":
 		case "from-git":
 			return Promise.reject(`Not supported: ${options.version}`);
+
 		default:
 			if (!semver.valid(options.version)) {
 				return Promise.reject(`Invalid version ${options.version}`);
@@ -438,6 +443,7 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 	const commitMessage = isWindows
 		? sanitizeCommitMessage(options.commitMessage)
 		: options.commitMessage;
+
 	if (commitMessage) {
 		args.push("-m", commitMessage);
 	}
@@ -454,6 +460,7 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 			shell: isWindows /* https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2 */,
 		},
 	);
+
 	if (!process.env["VSCE_TESTS"]) {
 		process.stdout.write(stdout);
 		process.stderr.write(stderr);
@@ -505,10 +512,13 @@ export class ManifestProcessor extends BaseProcessor {
 		}
 
 		const gitHost = getGitHost(manifest);
+
 		const repository = getRepositoryUrl(manifest, gitHost);
+
 		const isGitHub = isGitHubRepository(repository);
 
 		let enableMarketplaceQnA: boolean | undefined;
+
 		let customerQnALink: string | undefined;
 
 		if (manifest.qna === "marketplace") {
@@ -520,7 +530,9 @@ export class ManifestProcessor extends BaseProcessor {
 		}
 
 		const extensionKind = getExtensionKind(manifest);
+
 		const target = options.target;
+
 		const preRelease = options.preRelease;
 
 		if (target || preRelease) {
@@ -630,6 +642,7 @@ export class ManifestProcessor extends BaseProcessor {
 
 		if (this.options.version && !(this.options.updatePackageJson ?? true)) {
 			const contents = await read(file);
+
 			const packageJson = JSON.parse(contents);
 			packageJson.version = this.options.version;
 			file = {
@@ -729,10 +742,14 @@ export class TagsProcessor extends BaseProcessor {
 
 	async onEnd(): Promise<void> {
 		const keywords = this.manifest.keywords ?? [];
+
 		const contributes = this.manifest.contributes;
+
 		const activationEvents = this.manifest.activationEvents ?? [];
+
 		const doesContribute = (...properties: string[]) => {
 			let obj = contributes;
+
 			for (const property of properties) {
 				if (!obj) {
 					return false;
@@ -743,13 +760,21 @@ export class TagsProcessor extends BaseProcessor {
 		};
 
 		const colorThemes = doesContribute('themes') ? ['theme', 'color-theme'] : [];
+
 		const iconThemes = doesContribute('iconThemes') ? ['theme', 'icon-theme'] : [];
+
 		const productIconThemes = doesContribute('productIconThemes') ? ['theme', 'product-icon-theme'] : [];
+
 		const snippets = doesContribute('snippets') ? ['snippet'] : [];
+
 		const keybindings = doesContribute('keybindings') ? ['keybindings'] : [];
+
 		const debuggers = doesContribute('debuggers') ? ['debuggers'] : [];
+
 		const json = doesContribute('jsonValidation') ? ['json'] : [];
+
 		const remoteMenu = doesContribute('menus', 'statusBar/remoteIndicator') ? ['remote-menu'] : [];
+
 		const chatParticipants = doesContribute('chatParticipants') ? ['chat-participant', 'github-copilot'] : [];
 
 		const localizationContributions = (
@@ -787,6 +812,7 @@ export class TagsProcessor extends BaseProcessor {
 		);
 
 		const description = this.manifest.description || "";
+
 		const descriptionKeywords = Object.keys(TagsProcessor.Keywords).reduce<
 			string[]
 		>(
@@ -805,6 +831,7 @@ export class TagsProcessor extends BaseProcessor {
 		const webExtensionTags = isWebKind(this.manifest)
 			? ["__web_extension"]
 			: [];
+
 		const sponsorTags = this.manifest.sponsor?.url
 			? ["__sponsor_extension"]
 			: [];
@@ -906,6 +933,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 		if (this.rewriteRelativeLinks) {
 			const markdownPathRegex =
 				/(!?)\[([^\]\[]*|!\[[^\]\[]*]\([^\)]+\))\]\(([^\)]+)\)/g;
+
 			const urlReplace = (
 				_: string,
 				isImage: string,
@@ -930,6 +958,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 				}
 
 				title = title.replace(markdownPathRegex, urlReplace);
+
 				const prefix = isImage
 					? this.baseImagesUrl
 					: this.baseContentUrl;
@@ -977,6 +1006,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 			) {
 				const markdownIssueRegex =
 					/(\s|\n)([\w\d_-]+\/[\w\d_-]+)?#(\d+)\b/g;
+
 				const issueReplace = (
 					all: string,
 					prefix: string,
@@ -984,7 +1014,9 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 					issueNumber: string,
 				): string => {
 					let result = all;
+
 					let owner: string | undefined;
+
 					let repositoryName: string | undefined;
 
 					if (ownerAndRepositoryName) {
@@ -1048,6 +1080,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 		}
 
 		const html = markdownit({ html: true }).render(contents);
+
 		const $ = cheerio.load(html);
 
 		if (this.rewriteRelativeLinks) {
@@ -1061,6 +1094,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 				}
 
 				const src = decodeURI(rawSrc);
+
 				let srcUrl: url.URL;
 
 				try {
@@ -1127,8 +1161,10 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 
 		const gitHubRegex =
 			/(?<domain>github(\.com\/|:))(?<project>(?:[^/]+)\/(?:[^/]+))(\/|$)/;
+
 		const gitLabRegex =
 			/(?<domain>gitlab(\.com\/|:))(?<project>(?:[^/]+)(\/(?:[^/]+))+)(\/|$)/;
+
 		const match = (gitHubRegex.exec(repository) ||
 			gitLabRegex.exec(repository)) as unknown as {
 			groups: Record<string, string>;
@@ -1139,6 +1175,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 		}
 
 		const project = match.groups.project.replace(/\.git$/i, "");
+
 		const branchName = githostBranch ? githostBranch : "HEAD";
 
 		if (/^github/.test(match.groups.domain)) {
@@ -1172,6 +1209,7 @@ export class ReadmeProcessor extends MarkdownProcessor {
 
 	override async processFile(file: IFile): Promise<IFile> {
 		file = { ...file, originalPath: !isInMemoryFile(file) ? file.localPath : undefined, path: 'extension/readme.md' };
+
 		return await super.processFile(file, file.path);
 	}
 
@@ -1198,6 +1236,7 @@ export class ChangelogProcessor extends MarkdownProcessor {
 
 	override async processFile(file: IFile): Promise<IFile> {
 		file = { ...file, originalPath: !isInMemoryFile(file) ? file.localPath : undefined, path: 'extension/changelog.md' };
+
 		return await super.processFile(file, file.path);
 	}
 
@@ -1230,6 +1269,7 @@ export class LicenseProcessor extends BaseProcessor {
 				/^extension\/licen[cs]e(\.(md|txt))?$/i.test(name);
 		} else {
 			this.expectedLicenseName = match[1];
+
 			const regexp = new RegExp(`^${util.filePathToVsixPath(match[1])}$`);
 			this.filter = regexp.test.bind(regexp);
 		}
@@ -1277,6 +1317,7 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 
 	constructor(manifest: ManifestPackage) {
 		super(manifest);
+
 		if (manifest.main) {
 			this.entryPoints.add(
 				util.normalize(
@@ -1302,12 +1343,14 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 
 	onFile(file: IFile): Promise<IFile> {
 		this.entryPoints.delete(util.normalize(file.path));
+
 		return Promise.resolve(file);
 	}
 
 	async onEnd(): Promise<void> {
 		if (this.entryPoints.size > 0) {
 			const files: string = [...this.entryPoints].join(",\n  ");
+
 			throw new Error(
 				`Extension entrypoint(s) missing. Make sure these files exist and aren't ignored by '.vscodeignore':\n  ${files}`,
 			);
@@ -1330,6 +1373,7 @@ class IconProcessor extends BaseProcessor {
 
 	onFile(file: IFile): Promise<IFile> {
 		const normalizedPath = util.normalize(file.path);
+
 		if (normalizedPath === this.icon) {
 			this.didFindIcon = true;
 			this.assets.push({
@@ -1356,6 +1400,7 @@ const ValidExtensionKinds = new Set(["ui", "workspace"]);
 
 export function isWebKind(manifest: ManifestPackage): boolean {
 	const extensionKind = getExtensionKind(manifest);
+
 	return extensionKind.some((kind) => kind === "web");
 }
 
@@ -1430,6 +1475,7 @@ function deduceExtensionKinds(manifest: ManifestPackage): ExtensionKind[] {
 		for (const contribution of Object.keys(manifest.contributes)) {
 			const supportedExtensionKinds =
 				extensionPointExtensionKindsMap.get(contribution);
+
 			if (supportedExtensionKinds) {
 				result = result.filter(
 					(extensionKind) =>
@@ -1457,6 +1503,7 @@ export class NLSProcessor extends BaseProcessor {
 		}
 
 		const localizations = manifest.contributes.localizations;
+
 		const translations: { [languageId: string]: string } =
 			Object.create(null);
 
@@ -1481,6 +1528,7 @@ export class NLSProcessor extends BaseProcessor {
 
 	onFile(file: IFile): Promise<IFile> {
 		const normalizedPath = util.normalize(file.path);
+
 		const language = this.translations[normalizedPath];
 
 		if (language) {
@@ -1500,6 +1548,7 @@ export class ValidationProcessor extends BaseProcessor {
 
 	async onFile(file: IFile): Promise<IFile> {
 		const lower = file.path.toLowerCase();
+
 		const existing = this.files.get(lower);
 
 		if (existing) {
@@ -1541,7 +1590,9 @@ export function validateManifestForPackaging(
 		...manifest.engines,
 		vscode: validateEngineCompatibility(manifest.engines.vscode),
 	};
+
 	const name = validateExtensionName(manifest.name);
+
 	const version = validateVersion(manifest.version);
 	// allow users to package an extension without a publisher for testing reasons
 	const publisher = manifest.publisher
@@ -1553,19 +1604,24 @@ export function validateManifestForPackaging(
 	}
 
 	const hasActivationEvents = !!manifest.activationEvents;
+
 	const hasImplicitLanguageActivationEvents = manifest.contributes?.languages;
+
 	const hasOtherImplicitActivationEvents =
 		manifest.contributes?.commands ||
 		manifest.contributes?.authentication ||
 		manifest.contributes?.customEditors ||
 		manifest.contributes?.views;
+
 	const hasImplicitActivationEvents =
 		hasImplicitLanguageActivationEvents || hasOtherImplicitActivationEvents;
 
 	const hasMain = !!manifest.main;
+
 	const hasBrowser = !!manifest.browser;
 
 	let parsedEngineVersion: string;
+
 	try {
 		const engineSemver = parseSemver(`vscode@${engines.vscode}`);
 		parsedEngineVersion = engineSemver.version;
@@ -1613,6 +1669,7 @@ export function validateManifestForPackaging(
 
 	(manifest.badges ?? []).forEach((badge) => {
 		const decodedUrl = decodeURI(badge.url);
+
 		let srcUrl: url.URL;
 
 		try {
@@ -1662,6 +1719,7 @@ export function validateManifestForPackaging(
 
 	if (manifest.sponsor) {
 		let isValidSponsorUrl = true;
+
 		try {
 			const sponsorUrl = new url.URL(manifest.sponsor.url);
 			isValidSponsorUrl = /^(https|http):$/i.test(sponsorUrl.protocol);
@@ -1689,6 +1747,7 @@ export function readManifest(
 	nls = true,
 ): Promise<ManifestPackage> {
 	const manifestPath = path.join(cwd, "package.json");
+
 	const manifestNLSPath = path.join(cwd, "package.nls.json");
 
 	const manifest = fs.promises
@@ -1703,6 +1762,7 @@ export function readManifest(
 				console.error(
 					`Error parsing 'package.json' manifest file: not a valid JSON file.`,
 				);
+
 				throw e;
 			}
 		})
@@ -1730,6 +1790,7 @@ export function readManifest(
 				console.error(
 					`Error parsing JSON manifest translations file: ${manifestNLSPath}`,
 				);
+
 				throw e;
 			}
 		});
@@ -1888,6 +1949,7 @@ export async function toContentTypes(files: IFile[]): Promise<string> {
 	}
 
 	const contentTypes: string[] = [];
+
 	for (const [extension, contentType] of mimetypes) {
 		contentTypes.push(
 			`<Default Extension="${extension}" ContentType="${contentType}"/>`,
@@ -1941,6 +2003,7 @@ async function collectAllFiles(
 	followSymlinks: boolean = true
 ): Promise<string[]> {
 	const deps = await getDependencies(cwd, dependencies, dependencyEntryPoints);
+
 	const promises = deps.map(dep =>
 		glob('**', { cwd: dep, nodir: true, follow: followSymlinks, dot: true, ignore: 'node_modules/**' }).then(files =>
 			files.map(f => path.relative(cwd, path.join(dep, f))).map(f => f.replace(/\\/g, '/'))
@@ -1960,8 +2023,10 @@ function getDependenciesOption(
 	switch (options.useYarn) {
 		case true:
 			return "yarn";
+
 		case false:
 			return "npm";
+
 		default:
 			return undefined;
 	}
@@ -1977,6 +2042,7 @@ function collectFiles(
 	followSymlinks: boolean = false
 ): Promise<string[]> {
 	readmePath = readmePath ?? "README.md";
+
 	const notIgnored = ["!package.json", `!${readmePath}`];
 
 	return collectAllFiles(cwd, dependencies, dependencyEntryPoints, followSymlinks).then(files => {
@@ -2064,6 +2130,7 @@ export function processFiles(
 					(r, p) => [...r, ...p.assets],
 					[],
 				);
+
 				const tags = [
 					...processors.reduce<Set<string>>((r, p) => {
 						for (const tag of p.tags) {
@@ -2074,6 +2141,7 @@ export function processFiles(
 						return r;
 					}, new Set()),
 				].join(",");
+
 				const vsix = processors.reduce<VSIX>(
 					(r, p) => ({ ...r, ...p.vsix }),
 					{ assets, tags } as VSIX,
@@ -2121,8 +2189,11 @@ export function collect(
 	options: IPackageOptions = {},
 ): Promise<IFile[]> {
 	const cwd = options.cwd || process.cwd();
+
 	const packagedDependencies = options.dependencyEntryPoints || undefined;
+
 	const ignoreFile = options.ignoreFile || undefined;
+
 	const processors = createDefaultProcessors(manifest, options);
 
 	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile, manifest.files, options.readmePath, options.followSymlinks).then(fileNames => {
@@ -2205,6 +2276,7 @@ export async function prepublish(
 
 	await new Promise<void>((c, e) => {
 		const tool = useYarn ? "yarn" : "npm";
+
 		const child = cp.spawn(tool, ["run", "vscode:prepublish"], {
 			cwd,
 			shell: true,
@@ -2246,7 +2318,9 @@ export async function pack(
 	options: IPackageOptions = {},
 ): Promise<IPackageResult> {
 	const cwd = options.cwd || process.cwd();
+
 	const manifest = await readManifest(cwd);
+
 	const files = await collect(manifest, options);
 
 	await printAndValidatePackagedFiles(files, cwd, manifest, options);
@@ -2266,15 +2340,19 @@ export async function signPackage(
 	signTool: string,
 ): Promise<string> {
 	const packageFolder = path.dirname(packageFile);
+
 	const packageName = path.basename(packageFile, ".vsix");
+
 	const manifestFile = path.join(
 		packageFolder,
 		`${packageName}.signature.manifest`,
 	);
+
 	const signatureFile = path.join(
 		packageFolder,
 		`${packageName}.signature.p7s`,
 	);
+
 	const signatureZip = path.join(
 		packageFolder,
 		`${packageName}.signature.zip`,
@@ -2297,6 +2375,7 @@ export function generateManifest(
 ): Promise<string> {
 	if (!outputFile) {
 		const packageFolder = path.dirname(packageFile);
+
 		const packageName = path.basename(packageFile, ".vsix");
 		outputFile = path.join(packageFolder, `${packageName}.manifest`);
 	}
@@ -2312,9 +2391,11 @@ export async function verifySignature(
 		manifestFile,
 		signatureFile,
 	);
+
 	try {
 		const result = await vsceSign.verify(packageFile, sigzipPath, true);
 		console.log(`Signature verification result: ${result.code}`);
+
 		if (result.output) {
 			console.log(result.output);
 		}
@@ -2336,6 +2417,7 @@ export async function packageCommand(
 	options: IPackageOptions = {},
 ): Promise<any> {
 	const cwd = options.cwd || process.cwd();
+
 	const manifest = await readManifest(cwd);
 	util.patchOptionsWithManifest(options, manifest);
 
@@ -2349,6 +2431,7 @@ export async function packageCommand(
 	}
 
 	const stats = await fs.promises.stat(packagePath);
+
 	const packageSize = util.bytesToString(stats.size);
 	util.log.done(
 		`Packaged: ${packagePath} ` +
@@ -2375,6 +2458,7 @@ export async function listFiles(
 	options: IListFilesOptions = {},
 ): Promise<string[]> {
 	const cwd = options.cwd ?? process.cwd();
+
 	const manifest = options.manifest ?? (await readManifest(cwd));
 
 	if (options.prepublish) {
@@ -2399,6 +2483,7 @@ interface ILSOptions {
  */
 export async function ls(options: ILSOptions = {}): Promise<void> {
 	const cwd = process.cwd();
+
 	const manifest = await readManifest(cwd);
 
 	const files = await listFiles({ ...options, cwd, manifest });
@@ -2425,6 +2510,7 @@ export async function printAndValidatePackagedFiles(
 ): Promise<void> {
 	// Warn if the extension contains a lot of files
 	const jsFiles = files.filter((f) => /\.js$/i.test(f.path));
+
 	if (files.length > 5000 || jsFiles.length > 100) {
 		let message = "";
 		message += `This extension consists of ${chalk.bold(String(files.length))} files, out of which ${chalk.bold(String(jsFiles.length))} are JavaScript files. `;
@@ -2437,6 +2523,7 @@ export async function printAndValidatePackagedFiles(
 	const hasIgnoreFile = fs.existsSync(
 		options.ignoreFile ?? path.join(cwd, ".vscodeignore"),
 	);
+
 	if (!hasIgnoreFile && !manifest.files) {
 		let message = "";
 		message += `Neither a ${chalk.bold(".vscodeignore")} file nor a ${chalk.bold('"files"')} property in package.json was found. `;
@@ -2461,6 +2548,7 @@ export async function printAndValidatePackagedFiles(
 	// the package does not include at least one file for each include pattern
 	else if (manifest.files !== undefined && manifest.files.length > 0 && !options.allowUnusedFilesPattern) {
 		const localPaths = files.map(f => util.normalize(f.originalPath ?? (!isInMemoryFile(f) ? f.localPath : path.join(cwd, f.path))));
+
 		const filesIncludePatterns = manifest.files.map(includePattern => ({ absolute: util.normalize(path.join(cwd, includePattern)), relative: includePattern }));
 
 		const unusedIncludePatterns = filesIncludePatterns.filter(includePattern => {
@@ -2472,6 +2560,7 @@ export async function printAndValidatePackagedFiles(
 			// Check if the pattern provided by the user matches any folder in the package
 			if (!/(^|\/)[^/]*\*[^/]*$/.test(absoluteIncludePattern)) {
 				absoluteIncludePattern = (/\/$/.test(absoluteIncludePattern) ? `${absoluteIncludePattern}**` : `${absoluteIncludePattern}/**`);
+
 				return !localPaths.some(localFilePath => minimatch(localFilePath, absoluteIncludePattern, MinimatchOptions));
 			}
 			// Pattern does not match any file or folder

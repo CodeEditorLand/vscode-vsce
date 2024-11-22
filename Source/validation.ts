@@ -105,6 +105,7 @@ export function validateVSCodeTypesCompatibility(
 			return 0;
 		}
 	});
+
 	const [engineMajor, engineMinor] = plainEngineVersion
 		.split(".")
 		.map((x) => {

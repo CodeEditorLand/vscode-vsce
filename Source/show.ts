@@ -17,6 +17,7 @@ import {
 } from "./viewutils";
 
 const limitVersions = 6;
+
 const isExtensionTag = /^__ext_(.*)$/;
 
 export interface ExtensionStatisticsMap {
@@ -37,6 +38,7 @@ export function show(extensionId: string, json: boolean = false): Promise<any> {
 		ExtensionQueryFlags.IncludeVersions,
 		ExtensionQueryFlags.IncludeVersionProperties,
 	];
+
 	return getPublicGalleryAPI()
 		.getExtension(extensionId, flags)
 		.then((extension) => {
@@ -60,15 +62,20 @@ function unit(value: number, statisticName: string): string {
 	switch (statisticName) {
 		case "install":
 			return `${value} installs`;
+
 		case "updateCount":
 			return `${value} updates`;
+
 		case "averagerating":
 		case "weightedRating":
 			return `${value} stars`;
+
 		case "ratingcount":
 			return `${value} ratings`;
+
 		case "downloadCount":
 			return `${value} downloads`;
+
 		default:
 			return `${value}`;
 	}
@@ -80,6 +87,7 @@ function getVersionTable(versions: ExtensionVersion[]): ViewTable {
 	}
 
 	const set = new Set<string>();
+
 	const result = versions
 		.filter(({ version }) => !set.has(version!) && set.add(version!))
 		.slice(0, limitVersions)
@@ -120,6 +128,7 @@ function showOverview({
 	lastUpdated,
 }: VSCodePublishedExtension) {
 	const [{ version = "unknown" } = {}] = versions;
+
 	const versionTable = getVersionTable(versions);
 
 	const latestVersionTargets = versions

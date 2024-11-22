@@ -19,6 +19,7 @@ function createPatcher(translations: ITranslations): <T>(value: T) => T {
 		}
 
 		const translation = translations[match[1]] as unknown;
+
 		if (translation === undefined) {
 			throw new Error(`No translation found for ${value}`);
 		}
@@ -32,6 +33,7 @@ export function patchNLS(
 	translations: ITranslations,
 ): ManifestPackage {
 	const patcher = createPatcher(translations);
+
 	return JSON.parse(
 		JSON.stringify(manifest, (_, value: any) => patcher(value)),
 	);

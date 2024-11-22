@@ -20,6 +20,7 @@ export interface IPublisher {
 
 export interface IStore extends Iterable<IPublisher> {
 	readonly size: number;
+
 	get(name: string): IPublisher | undefined;
 	add(publisher: IPublisher): Promise<void>;
 	delete(name: string): Promise<void>;
@@ -33,6 +34,7 @@ export class FileStore implements IStore {
 	): Promise<FileStore> {
 		try {
 			const rawStore = await fs.promises.readFile(path, "utf8");
+
 			return new FileStore(path, JSON.parse(rawStore).publishers);
 		} catch (err: any) {
 			if (err.code === "ENOENT") {
@@ -95,6 +97,7 @@ export class FileStore implements IStore {
 export class KeytarStore implements IStore {
 	static async open(serviceName = "vscode-vsce"): Promise<KeytarStore> {
 		const keytar = await import("keytar");
+
 		const creds = await keytar.findCredentials(serviceName);
 
 		return new KeytarStore(
@@ -153,6 +156,7 @@ export async function verifyPat(options: IVerifyPatOptions): Promise<void> {
 	const publisherName =
 		options.publisherName ??
 		validatePublisher((await readManifest()).publisher);
+
 	const pat = await getPAT(publisherName, options);
 
 	try {
@@ -181,6 +185,7 @@ async function requestPAT(publisherName: string): Promise<string> {
 		{ silent: true, replace: "*" },
 	);
 	await verifyPat({ publisherName, pat });
+
 	return pat;
 }
 
@@ -198,6 +203,7 @@ async function openDefaultStore(): Promise<IStore> {
 		log.warn(
 			`Failed to open credential store. Falling back to storing secrets clear-text in: ${store.path}`,
 		);
+
 		return store;
 	}
 
@@ -222,6 +228,7 @@ export async function getPublisher(publisherName: string): Promise<IPublisher> {
 	validatePublisher(publisherName);
 
 	const store = await openDefaultStore();
+
 	let publisher = store.get(publisherName);
 
 	if (publisher) {
@@ -241,10 +248,12 @@ export async function loginPublisher(
 	validatePublisher(publisherName);
 
 	const store = await openDefaultStore();
+
 	let publisher = store.get(publisherName);
 
 	if (publisher) {
 		console.log(`Publisher '${publisherName}' is already known`);
+
 		const answer = await read("Do you want to overwrite its PAT? [y/N] ");
 
 		if (!/^y$/i.test(answer)) {
@@ -263,6 +272,7 @@ export async function logoutPublisher(publisherName: string): Promise<void> {
 	validatePublisher(publisherName);
 
 	const store = await openDefaultStore();
+
 	const publisher = store.get(publisherName);
 
 	if (!publisher) {
@@ -274,6 +284,7 @@ export async function logoutPublisher(publisherName: string): Promise<void> {
 
 export async function deletePublisher(publisherName: string): Promise<void> {
 	const publisher = await getPublisher(publisherName);
+
 	const answer = await read(
 		`This will FOREVER delete '${publisherName}'! Are you sure? [y/N] `,
 	);

@@ -41,6 +41,7 @@ export function getHubUrl(publisher: string, name: string): string {
 export async function getGalleryAPI(pat: string): Promise<IGalleryApi> {
 	// from https://github.com/Microsoft/tfs-cli/blob/master/app/exec/extension/default.ts#L287-L292
 	const authHandler = getBasicHandler("OAuth", pat);
+
 	return new GalleryApi(marketplaceUrl, [authHandler]);
 
 	// const vsoapi = new WebApi(marketplaceUrl, authHandler);
@@ -51,7 +52,9 @@ export async function getSecurityRolesAPI(
 	pat: string,
 ): Promise<ISecurityRolesApi> {
 	const authHandler = getBasicHandler("OAuth", pat);
+
 	const vsoapi = new WebApi(marketplaceUrl, authHandler);
+
 	return await vsoapi.getSecurityRolesApi();
 }
 
@@ -101,6 +104,7 @@ export function isCancelledError(error: any) {
 export class CancellationToken {
 	private listeners: Function[] = [];
 	private _cancelled: boolean = false;
+
 	get isCancelled(): boolean {
 		return this._cancelled;
 	}
@@ -221,6 +225,7 @@ export function patchOptionsWithManifest(
 
 export function bytesToString(bytes: number): string {
 	let size = 0;
+
 	let unit = "";
 
 	if (bytes > 1048576) {
@@ -244,8 +249,11 @@ export function vsixPathToFilePath(extensionFilePath: string): string {
 }
 
 const FOLDER_SIZE_KEY = "/__FOlDER_SIZE__\\";
+
 const FOLDER_FILES_TOTAL_KEY = "/__FOLDER_CHILDREN__\\";
+
 const FILE_SIZE_WARNING_THRESHOLD = 0.85;
+
 const FILE_SIZE_LARGE_THRESHOLD = 0.2;
 
 export async function generateFileStructureTree(
@@ -254,6 +262,7 @@ export async function generateFileStructureTree(
 	printLinesLimit: number = Number.MAX_VALUE,
 ): Promise<string[]> {
 	const folderTree: any = {};
+
 	const depthCounts: number[] = [];
 
 	// Build a tree structure from the file paths
@@ -261,6 +270,7 @@ export async function generateFileStructureTree(
 	// Store the number of children in the folder node
 	for (const filePath of filePaths) {
 		const parts = filePath.tree.split("/");
+
 		let currentLevel = folderTree;
 
 		parts.forEach((part, depth) => {
@@ -296,6 +306,7 @@ export async function generateFileStructureTree(
 
 	// Get max depth depending on the maximum number of lines allowed to print
 	let currentDepth = 0;
+
 	let countUpToCurrentDepth = depthCounts[0] + 1; /* root folder */
 	for (let i = 1; i < depthCounts.length; i++) {
 		if (countUpToCurrentDepth + depthCounts[i] > printLinesLimit) {
@@ -311,6 +322,7 @@ export async function generateFileStructureTree(
 		filePaths.map(async (filePath) => {
 			try {
 				const stats = await fs.promises.stat(filePath.origin);
+
 				return [stats.size, filePath.tree];
 			} catch (error) {
 				return [0, filePath.origin];
@@ -324,6 +336,7 @@ export async function generateFileStructureTree(
 		totalFileSizes += size;
 
 		const parts = filePath.split("/");
+
 		let currentLevel = folderTree;
 		parts.forEach((part) => {
 			if (currentLevel === undefined) {
@@ -350,6 +363,7 @@ export async function generateFileStructureTree(
 			output.push(
 				`\nThe file ${filePath} is ${chalk.red("large")} (${bytesToString(size)})`,
 			);
+
 			break;
 		}
 	}
@@ -378,6 +392,7 @@ function createTreeOutput(
 		fileSize: number,
 	) => {
 		let fileSizeColored = "";
+
 		if (fileSize > 0) {
 			const fileSizeString = `[${bytesToString(fileSize)}]`;
 			fileSizeColored = getColorFromSize(fileSize)(fileSizeString);
@@ -401,13 +416,17 @@ function createTreeOutput(
 		// Max depth is reached, print the folder name and additional metadata
 		// as children will not be printed
 		const folderSizeString = bytesToString(folderSize);
+
 		const folder = chalk.bold(`${folderName}/`);
+
 		const numFilesString = chalk.green(
 			`(${filesCount} ${filesCount === 1 ? "file" : "files"})`,
 		);
+
 		const folderSizeColored = getColorFromSize(folderSize)(
 			`[${folderSizeString}]`,
 		);
+
 		return `${prefix}${folder} ${numFilesString} ${folderSizeColored}`;
 	};
 
@@ -421,18 +440,24 @@ function createTreeOutput(
 		const sortedFolderKeys = Object.keys(tree)
 			.filter((key) => typeof tree[key] !== "number")
 			.sort();
+
 		const sortedFileKeys = Object.keys(tree)
 			.filter((key) => typeof tree[key] === "number")
 			.sort();
+
 		const sortedKeys = [...sortedFileKeys, ...sortedFolderKeys].filter(
 			(key) => key !== FOLDER_SIZE_KEY && key !== FOLDER_FILES_TOTAL_KEY,
 		);
 
 		const output: string[] = [];
+
 		for (let i = 0; i < sortedKeys.length; i++) {
 			const key = sortedKeys[i];
+
 			const isLast = i === sortedKeys.length - 1;
+
 			const localPrefix = prefix + (isLast ? "└─ " : "├─ ");
+
 			const childPrefix = prefix + (isLast ? "   " : "│  ");
 
 			if (typeof tree[key] === "number") {
@@ -449,6 +474,7 @@ function createTreeOutput(
 						depth,
 					),
 				);
+
 				if (depth < maxDepth) {
 					output.push(
 						...createTreeLayerOutput(

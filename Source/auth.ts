@@ -26,6 +26,7 @@ function createChainedTokenCredential(): ChainedTokenCredential {
 export async function getAzureCredentialAccessToken(): Promise<string> {
 	try {
 		const credential = createChainedTokenCredential();
+
 		const token = await credential.getToken(
 			"499b84ac-1321-427f-aa17-267ca6975798/.default",
 			{

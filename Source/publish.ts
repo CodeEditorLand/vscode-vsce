@@ -131,7 +131,9 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 
 		for (let index = 0; index < options.packagePath.length; index++) {
 			const packagePath = options.packagePath[index];
+
 			const vsix = await readVSIXPackage(packagePath);
+
 			let target: string | undefined;
 
 			try {
@@ -144,6 +146,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 
 			if (options.preRelease) {
 				let isPreReleasePackage = false;
+
 				try {
 					isPreReleasePackage =
 						!!vsix.xmlManifest.PackageManifest.Metadata[0].Properties[0].Property.some(
@@ -167,6 +170,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			);
 
 			let sigzipPath: string | undefined;
+
 			if (
 				options.manifestPath?.[index] &&
 				options.signaturePath?.[index]
@@ -192,6 +196,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 		}
 	} else {
 		const cwd = options.cwd || process.cwd();
+
 		const manifest = await readManifest(cwd);
 		patchOptionsWithManifest(options, manifest);
 
@@ -204,15 +209,18 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 		if (options.targets) {
 			for (const target of options.targets) {
 				const packagePath = await tmpName();
+
 				const packageResult = await pack({
 					...options,
 					target,
 					packagePath,
 				});
+
 				const manifestValidated = validateManifestForPublishing(
 					packageResult.manifest,
 					options,
 				);
+
 				const sigzipPath = options.signTool
 					? await signPackage(packagePath, options.signTool)
 					: undefined;
@@ -223,11 +231,14 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			}
 		} else {
 			const packagePath = await tmpName();
+
 			const packageResult = await pack({ ...options, packagePath });
+
 			const manifestValidated = validateManifestForPublishing(
 				packageResult.manifest,
 				options,
 			);
+
 			const sigzipPath = options.signTool
 				? await signPackage(packagePath, options.signTool)
 				: undefined;
@@ -253,9 +264,13 @@ async function _publish(
 	options: IInternalPublishOptions,
 ) {
 	const pat = await getPAT(manifest.publisher, options);
+
 	const api = await getGalleryAPI(pat);
+
 	const packageStream = fs.createReadStream(packagePath);
+
 	const name = `${manifest.publisher}.${manifest.name}`;
+
 	const description = options.target
 		? `${name} (${options.target}) v${manifest.version}`
 		: `${name} v${manifest.version}`;
@@ -291,6 +306,7 @@ async function _publish(
 					log.done(
 						`Version ${manifest.version} is already published. Skipping publish.`,
 					);
+
 					return;
 				} else {
 					throw new Error(`${description} already exists.`);
@@ -320,6 +336,7 @@ async function _publish(
 							log.done(
 								`Version ${manifest.version} is already published. Skipping publish.`,
 							);
+
 							return;
 						} else {
 							throw new Error(`${description} already exists.`);
@@ -371,12 +388,17 @@ async function _publishSignedPackage(
 	manifest: ManifestPublish,
 ) {
 	const extensionType = "Visual Studio Code";
+
 	const form = new FormData();
+
 	const lineBreak = '\r\n';
+
 	form.setBoundary('0f411892-ef48-488f-89d3-4f0546e84723');
+
 	form.append('vsix', packageStream, {
 		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=vsix; filename=\"${packageName}\"${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`
 	});
+
 	form.append('sigzip', sigzipStream, {
 		header: `--${form.getBoundary()}${lineBreak}Content-Disposition: attachment; name=sigzip; filename=\"${sigzipName}\"${lineBreak}Content-Type: application/octet-stream${lineBreak}${lineBreak}`
 	});
@@ -406,6 +428,7 @@ async function _publishSignedPackage(
  */
 export interface IUnpublishOptions extends IPublishOptions {
 	id?: string;
+
 	force?: boolean;
 }
 
@@ -433,6 +456,7 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 	}
 
 	const pat = await getPAT(publisher, options);
+
 	const api = await getGalleryAPI(pat);
 
 	await api.deleteExtension(publisher, name);

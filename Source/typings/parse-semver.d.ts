@@ -5,5 +5,6 @@ declare module "parse-semver" {
 	}
 	module parseSemver {}
 	function parseSemver(input: string): Result;
+
 	export = parseSemver;
 }
