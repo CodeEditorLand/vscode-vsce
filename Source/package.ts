@@ -759,23 +759,35 @@ export class TagsProcessor extends BaseProcessor {
 			return obj && obj.length > 0;
 		};
 
-		const colorThemes = doesContribute('themes') ? ['theme', 'color-theme'] : [];
+		const colorThemes = doesContribute("themes")
+			? ["theme", "color-theme"]
+			: [];
 
-		const iconThemes = doesContribute('iconThemes') ? ['theme', 'icon-theme'] : [];
+		const iconThemes = doesContribute("iconThemes")
+			? ["theme", "icon-theme"]
+			: [];
 
-		const productIconThemes = doesContribute('productIconThemes') ? ['theme', 'product-icon-theme'] : [];
+		const productIconThemes = doesContribute("productIconThemes")
+			? ["theme", "product-icon-theme"]
+			: [];
 
-		const snippets = doesContribute('snippets') ? ['snippet'] : [];
+		const snippets = doesContribute("snippets") ? ["snippet"] : [];
 
-		const keybindings = doesContribute('keybindings') ? ['keybindings'] : [];
+		const keybindings = doesContribute("keybindings")
+			? ["keybindings"]
+			: [];
 
-		const debuggers = doesContribute('debuggers') ? ['debuggers'] : [];
+		const debuggers = doesContribute("debuggers") ? ["debuggers"] : [];
 
-		const json = doesContribute('jsonValidation') ? ['json'] : [];
+		const json = doesContribute("jsonValidation") ? ["json"] : [];
 
-		const remoteMenu = doesContribute('menus', 'statusBar/remoteIndicator') ? ['remote-menu'] : [];
+		const remoteMenu = doesContribute("menus", "statusBar/remoteIndicator")
+			? ["remote-menu"]
+			: [];
 
-		const chatParticipants = doesContribute('chatParticipants') ? ['chat-participant', 'github-copilot'] : [];
+		const chatParticipants = doesContribute("chatParticipants")
+			? ["chat-participant", "github-copilot"]
+			: [];
 
 		const localizationContributions = (
 			(contributes && contributes["localizations"]) ??
@@ -1135,8 +1147,8 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 
 		return {
 			path: file.path,
-			contents: Buffer.from(contents, 'utf8'),
-			originalPath: file.originalPath
+			contents: Buffer.from(contents, "utf8"),
+			originalPath: file.originalPath,
 		};
 	}
 
@@ -1208,7 +1220,11 @@ export class ReadmeProcessor extends MarkdownProcessor {
 	}
 
 	override async processFile(file: IFile): Promise<IFile> {
-		file = { ...file, originalPath: !isInMemoryFile(file) ? file.localPath : undefined, path: 'extension/readme.md' };
+		file = {
+			...file,
+			originalPath: !isInMemoryFile(file) ? file.localPath : undefined,
+			path: "extension/readme.md",
+		};
 
 		return await super.processFile(file, file.path);
 	}
@@ -1235,7 +1251,11 @@ export class ChangelogProcessor extends MarkdownProcessor {
 	}
 
 	override async processFile(file: IFile): Promise<IFile> {
-		file = { ...file, originalPath: !isInMemoryFile(file) ? file.localPath : undefined, path: 'extension/changelog.md' };
+		file = {
+			...file,
+			originalPath: !isInMemoryFile(file) ? file.localPath : undefined,
+			path: "extension/changelog.md",
+		};
 
 		return await super.processFile(file, file.path);
 	}
@@ -1998,16 +2018,28 @@ const defaultIgnore = [
 
 async function collectAllFiles(
 	cwd: string,
-	dependencies: 'npm' | 'yarn' | 'none' | undefined,
+	dependencies: "npm" | "yarn" | "none" | undefined,
 	dependencyEntryPoints?: string[],
-	followSymlinks: boolean = true
+	followSymlinks: boolean = true,
 ): Promise<string[]> {
-	const deps = await getDependencies(cwd, dependencies, dependencyEntryPoints);
+	const deps = await getDependencies(
+		cwd,
+		dependencies,
+		dependencyEntryPoints,
+	);
 
-	const promises = deps.map(dep =>
-		glob('**', { cwd: dep, nodir: true, follow: followSymlinks, dot: true, ignore: 'node_modules/**' }).then(files =>
-			files.map(f => path.relative(cwd, path.join(dep, f))).map(f => f.replace(/\\/g, '/'))
-		)
+	const promises = deps.map((dep) =>
+		glob("**", {
+			cwd: dep,
+			nodir: true,
+			follow: followSymlinks,
+			dot: true,
+			ignore: "node_modules/**",
+		}).then((files) =>
+			files
+				.map((f) => path.relative(cwd, path.join(dep, f)))
+				.map((f) => f.replace(/\\/g, "/")),
+		),
 	);
 
 	return Promise.all(promises).then(util.flatten);
@@ -2039,29 +2071,42 @@ function collectFiles(
 	ignoreFile?: string,
 	manifestFileIncludes?: string[],
 	readmePath?: string,
-	followSymlinks: boolean = false
+	followSymlinks: boolean = false,
 ): Promise<string[]> {
 	readmePath = readmePath ?? "README.md";
 
 	const notIgnored = ["!package.json", `!${readmePath}`];
 
-	return collectAllFiles(cwd, dependencies, dependencyEntryPoints, followSymlinks).then(files => {
-		files = files.filter(f => !/\r$/m.test(f));
+	return collectAllFiles(
+		cwd,
+		dependencies,
+		dependencyEntryPoints,
+		followSymlinks,
+	).then((files) => {
+		files = files.filter((f) => !/\r$/m.test(f));
 
 		return (
 			fs.promises
-				.readFile(ignoreFile ? ignoreFile : path.join(cwd, '.vscodeignore'), 'utf8')
-				.catch<string>(err =>
-					err.code !== 'ENOENT' ?
-						Promise.reject(err) :
-						ignoreFile ?
-							Promise.reject(err) :
-							// No .vscodeignore file exists
-							manifestFileIncludes ?
-								// include all files in manifestFileIncludes and ignore the rest
-								Promise.resolve(manifestFileIncludes.map(file => `!${file}`).concat(['**']).join('\n\r')) :
-								// "files" property not used in package.json
-								Promise.resolve('')
+				.readFile(
+					ignoreFile ? ignoreFile : path.join(cwd, ".vscodeignore"),
+					"utf8",
+				)
+				.catch<string>((err) =>
+					err.code !== "ENOENT"
+						? Promise.reject(err)
+						: ignoreFile
+							? Promise.reject(err)
+							: // No .vscodeignore file exists
+								manifestFileIncludes
+								? // include all files in manifestFileIncludes and ignore the rest
+									Promise.resolve(
+										manifestFileIncludes
+											.map((file) => `!${file}`)
+											.concat(["**"])
+											.join("\n\r"),
+									)
+								: // "files" property not used in package.json
+									Promise.resolve(""),
 				)
 
 				// Parse raw ignore by splitting output into lines and filtering out empty lines and comments
@@ -2196,8 +2241,19 @@ export function collect(
 
 	const processors = createDefaultProcessors(manifest, options);
 
-	return collectFiles(cwd, getDependenciesOption(options), packagedDependencies, ignoreFile, manifest.files, options.readmePath, options.followSymlinks).then(fileNames => {
-		const files = fileNames.map(f => ({ path: util.filePathToVsixPath(f), localPath: path.join(cwd, f) }));
+	return collectFiles(
+		cwd,
+		getDependenciesOption(options),
+		packagedDependencies,
+		ignoreFile,
+		manifest.files,
+		options.readmePath,
+		options.followSymlinks,
+	).then((fileNames) => {
+		const files = fileNames.map((f) => ({
+			path: util.filePathToVsixPath(f),
+			localPath: path.join(cwd, f),
+		}));
 
 		return processFiles(processors, files);
 	});
@@ -2465,7 +2521,15 @@ export async function listFiles(
 		await prepublish(cwd, manifest, options.useYarn);
 	}
 
-	return await collectFiles(cwd, getDependenciesOption(options), options.packagedDependencies, options.ignoreFile, manifest.files, options.readmePath, options.followSymlinks);
+	return await collectFiles(
+		cwd,
+		getDependenciesOption(options),
+		options.packagedDependencies,
+		options.ignoreFile,
+		manifest.files,
+		options.readmePath,
+		options.followSymlinks,
+	);
 }
 
 interface ILSOptions {
@@ -2546,34 +2610,66 @@ export async function printAndValidatePackagedFiles(
 	}
 	// Throw an error if the extension uses the files property in package.json and
 	// the package does not include at least one file for each include pattern
-	else if (manifest.files !== undefined && manifest.files.length > 0 && !options.allowUnusedFilesPattern) {
-		const localPaths = files.map(f => util.normalize(f.originalPath ?? (!isInMemoryFile(f) ? f.localPath : path.join(cwd, f.path))));
+	else if (
+		manifest.files !== undefined &&
+		manifest.files.length > 0 &&
+		!options.allowUnusedFilesPattern
+	) {
+		const localPaths = files.map((f) =>
+			util.normalize(
+				f.originalPath ??
+					(!isInMemoryFile(f) ? f.localPath : path.join(cwd, f.path)),
+			),
+		);
 
-		const filesIncludePatterns = manifest.files.map(includePattern => ({ absolute: util.normalize(path.join(cwd, includePattern)), relative: includePattern }));
+		const filesIncludePatterns = manifest.files.map((includePattern) => ({
+			absolute: util.normalize(path.join(cwd, includePattern)),
+			relative: includePattern,
+		}));
 
-		const unusedIncludePatterns = filesIncludePatterns.filter(includePattern => {
-			let absoluteIncludePattern = includePattern.absolute;
-			// Check if the pattern provided by the user matches any file in the package
-			if (localPaths.some(localFilePath => minimatch(localFilePath, absoluteIncludePattern, MinimatchOptions))) {
-				return false;
-			}
-			// Check if the pattern provided by the user matches any folder in the package
-			if (!/(^|\/)[^/]*\*[^/]*$/.test(absoluteIncludePattern)) {
-				absoluteIncludePattern = (/\/$/.test(absoluteIncludePattern) ? `${absoluteIncludePattern}**` : `${absoluteIncludePattern}/**`);
+		const unusedIncludePatterns = filesIncludePatterns.filter(
+			(includePattern) => {
+				let absoluteIncludePattern = includePattern.absolute;
+				// Check if the pattern provided by the user matches any file in the package
+				if (
+					localPaths.some((localFilePath) =>
+						minimatch(
+							localFilePath,
+							absoluteIncludePattern,
+							MinimatchOptions,
+						),
+					)
+				) {
+					return false;
+				}
+				// Check if the pattern provided by the user matches any folder in the package
+				if (!/(^|\/)[^/]*\*[^/]*$/.test(absoluteIncludePattern)) {
+					absoluteIncludePattern = /\/$/.test(absoluteIncludePattern)
+						? `${absoluteIncludePattern}**`
+						: `${absoluteIncludePattern}/**`;
 
-				return !localPaths.some(localFilePath => minimatch(localFilePath, absoluteIncludePattern, MinimatchOptions));
-			}
-			// Pattern does not match any file or folder
-			return true;
-		});
+					return !localPaths.some((localFilePath) =>
+						minimatch(
+							localFilePath,
+							absoluteIncludePattern,
+							MinimatchOptions,
+						),
+					);
+				}
+				// Pattern does not match any file or folder
+				return true;
+			},
+		);
 
 		if (unusedIncludePatterns.length > 0) {
 			let message = "";
 			message += `The following include patterns in the ${chalk.bold('"files"')} property in package.json do not match any files packaged in the extension:\n`;
-			message += unusedIncludePatterns.map(p => `  - ${p.relative}`).join('\n');
-			message += '\nRemove any include pattern which is not needed.\n';
-			message += `\n=> Run ${chalk.bold('vsce ls --tree')} to see all included files.\n`;
-			message += `=> Use ${chalk.bold('--allow-unused-files-pattern')} to skip this check`;
+			message += unusedIncludePatterns
+				.map((p) => `  - ${p.relative}`)
+				.join("\n");
+			message += "\nRemove any include pattern which is not needed.\n";
+			message += `\n=> Run ${chalk.bold("vsce ls --tree")} to see all included files.\n`;
+			message += `=> Use ${chalk.bold("--allow-unused-files-pattern")} to skip this check`;
 			util.log.error(message);
 			process.exit(1);
 		}
