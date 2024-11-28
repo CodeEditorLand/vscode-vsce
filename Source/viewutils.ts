@@ -1,4 +1,5 @@
 export type ViewTableRow = string[];
+
 export type ViewTable = ViewTableRow[];
 
 const fixedLocale = "en-us";

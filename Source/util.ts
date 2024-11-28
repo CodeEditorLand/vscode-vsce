@@ -11,6 +11,7 @@ import { ManifestPackage } from "./manifest";
 import { PublicGalleryAPI } from "./publicgalleryapi";
 
 const __read = promisify<_read.Options, string>(_read);
+
 export function read(
 	prompt: string,
 	options: _read.Options = {},

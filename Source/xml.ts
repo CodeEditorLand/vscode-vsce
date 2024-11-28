@@ -44,4 +44,5 @@ export type ContentTypes = {
 };
 
 export const parseXmlManifest = createXMLParser<XMLManifest>();
+
 export const parseContentTypes = createXMLParser<ContentTypes>();
