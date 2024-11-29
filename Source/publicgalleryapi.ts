@@ -11,9 +11,13 @@ import { HttpClient, HttpClientResponse } from "typed-rest-client/HttpClient";
 
 export interface ExtensionQuery {
 	readonly pageNumber?: number;
+
 	readonly pageSize?: number;
+
 	readonly flags?: ExtensionQueryFlags[];
+
 	readonly criteria?: FilterCriteria[];
+
 	readonly assetTypes?: string[];
 }
 

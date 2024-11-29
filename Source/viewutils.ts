@@ -43,6 +43,7 @@ export function repeatString(text: string, count: number): string {
 	for (let i = 0; i < count; i++) {
 		result += text;
 	}
+
 	return result;
 }
 
@@ -54,6 +55,7 @@ export function ratingStars(rating: number, total = 5): string {
 
 export function tableView(table: ViewTable, spacing: number = 2): string[] {
 	const maxLen: Record<number, number> = {};
+
 	table.forEach((row) =>
 		row.forEach(
 			(cell, i) => (maxLen[i] = Math.max(maxLen[i] || 0, cell.length)),
@@ -106,5 +108,6 @@ export function wordTrim(
 	if (text.length > width) {
 		return text.substr(0, width - indicator.length) + indicator;
 	}
+
 	return text;
 }

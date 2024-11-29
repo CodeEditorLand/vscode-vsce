@@ -83,6 +83,7 @@ export function validateVSCodeTypesCompatibility(
 
 	try {
 		const engineSemver = parseSemver(`vscode@${engineVersion}`);
+
 		plainEngineVersion = engineSemver.version;
 	} catch (err) {
 		throw new Error("Failed to parse semver of engines.vscode");
@@ -90,6 +91,7 @@ export function validateVSCodeTypesCompatibility(
 
 	try {
 		const typeSemver = parseSemver(`@types/vscode@${typeVersion}`);
+
 		plainTypeVersion = typeSemver.version;
 	} catch (err) {
 		throw new Error("Failed to parse semver of @types/vscode");
@@ -123,6 +125,7 @@ export function validateVSCodeTypesCompatibility(
 	if (typeMajor > engineMajor) {
 		throw error;
 	}
+
 	if (typeMajor === engineMajor && typeMinor > engineMinor) {
 		throw error;
 	}

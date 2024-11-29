@@ -104,6 +104,7 @@ export function isCancelledError(error: any) {
 
 export class CancellationToken {
 	private listeners: Function[] = [];
+
 	private _cancelled: boolean = false;
 
 	get isCancelled(): boolean {
@@ -124,10 +125,12 @@ export class CancellationToken {
 
 	cancel(): void {
 		const emit = !this._cancelled;
+
 		this._cancelled = true;
 
 		if (emit) {
 			this.listeners.forEach((l) => l(CancelledError));
+
 			this.listeners = [];
 		}
 	}
@@ -193,6 +196,7 @@ function logToGitHubActions(type: string, message: string): void {
 		type === "info"
 			? message
 			: `::${type}::${escapeGitHubActionsMessage(message)}`;
+
 	process.stdout.write(command + EOL);
 }
 
@@ -231,11 +235,14 @@ export function bytesToString(bytes: number): string {
 
 	if (bytes > 1048576) {
 		size = Math.round(bytes / 10485.76) / 100;
+
 		unit = "MB";
 	} else {
 		size = Math.round(bytes / 10.24) / 100;
+
 		unit = "KB";
 	}
+
 	return `${size} ${unit}`;
 }
 
@@ -285,7 +292,9 @@ export async function generateFileStructureTree(
 				} else {
 					// The folder size is stored in the folder node
 					currentLevel[part] = {};
+
 					currentLevel[part][FOLDER_SIZE_KEY] = 0;
+
 					currentLevel[part][FOLDER_FILES_TOTAL_KEY] = 0;
 				}
 
@@ -293,6 +302,7 @@ export async function generateFileStructureTree(
 				if (depthCounts.length <= depth) {
 					depthCounts.push(0);
 				}
+
 				depthCounts[depth]++;
 			}
 
@@ -313,9 +323,12 @@ export async function generateFileStructureTree(
 		if (countUpToCurrentDepth + depthCounts[i] > printLinesLimit) {
 			break;
 		}
+
 		currentDepth++;
+
 		countUpToCurrentDepth += depthCounts[i];
 	}
+
 	const maxDepth = currentDepth;
 
 	// Get all file sizes
@@ -333,12 +346,14 @@ export async function generateFileStructureTree(
 
 	// Store all file sizes in the tree
 	let totalFileSizes = 0;
+
 	fileSizes.forEach(([size, filePath]) => {
 		totalFileSizes += size;
 
 		const parts = filePath.split("/");
 
 		let currentLevel = folderTree;
+
 		parts.forEach((part) => {
 			if (currentLevel === undefined) {
 				throw new Error(
@@ -351,12 +366,15 @@ export async function generateFileStructureTree(
 			} else if (currentLevel[part]) {
 				currentLevel[part][FOLDER_SIZE_KEY] += size;
 			}
+
 			currentLevel = currentLevel[part];
 		});
 	});
 
 	let output: string[] = [];
+
 	output.push(chalk.bold(rootFolder));
+
 	output.push(...createTreeOutput(folderTree, maxDepth, totalFileSizes));
 
 	for (const [size, filePath] of fileSizes) {
@@ -396,8 +414,10 @@ function createTreeOutput(
 
 		if (fileSize > 0) {
 			const fileSizeString = `[${bytesToString(fileSize)}]`;
+
 			fileSizeColored = getColorFromSize(fileSize)(fileSizeString);
 		}
+
 		return `${prefix}${fileName} ${fileSizeColored}`;
 	};
 
@@ -488,6 +508,7 @@ function createTreeOutput(
 				}
 			}
 		}
+
 		return output;
 	};
 

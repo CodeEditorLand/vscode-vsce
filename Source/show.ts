@@ -22,7 +22,9 @@ const isExtensionTag = /^__ext_(.*)$/;
 
 export interface ExtensionStatisticsMap {
 	install: number;
+
 	averagerating: number;
+
 	ratingcount: number;
 }
 
@@ -104,11 +106,13 @@ function getVersionTable(versions: ExtensionVersion[]): ViewTable {
 		for (const version of result) {
 			version.pop();
 		}
+
 		result.unshift(["Version", "Last Updated"]);
 	} else {
 		for (const version of result) {
 			version[2] = version[2] ? `✔️` : "";
 		}
+
 		result.unshift(["Version", "Last Updated", "Pre-release"]);
 	}
 

@@ -9,8 +9,11 @@ import { parseXmlManifest, XMLManifest } from "./xml";
 async function bufferStream(stream: Readable): Promise<Buffer> {
 	return await new Promise((c, e) => {
 		const buffers: Buffer[] = [];
+
 		stream.on("data", (buffer) => buffers.push(buffer));
+
 		stream.once("error", e);
+
 		stream.once("end", () => c(Buffer.concat(buffers)));
 	});
 }
@@ -31,6 +34,7 @@ export async function readZip(
 		zipfile.once("close", () => c(result));
 
 		zipfile.readEntry();
+
 		zipfile.on("entry", (entry: Entry) => {
 			const name = entry.fileName.toLowerCase();
 
@@ -44,6 +48,7 @@ export async function readZip(
 
 					bufferStream(stream!).then((buffer) => {
 						result.set(name, buffer);
+
 						zipfile.readEntry();
 					});
 				});

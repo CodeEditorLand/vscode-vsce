@@ -33,14 +33,18 @@ const MinimatchOptions: minimatch.IOptions = { dot: true };
 
 export interface IInMemoryFile {
 	path: string;
+
 	mode?: number;
+
 	originalPath?: string; // used to track the original path of a file that was renamed
 	readonly contents: Buffer | string;
 }
 
 export interface ILocalFile {
 	path: string;
+
 	mode?: number;
+
 	originalPath?: string; // used to track the original path of a file that was renamed
 	readonly localPath: string;
 }
@@ -63,6 +67,7 @@ export function read(file: IFile): Promise<string> {
 
 export interface IPackage {
 	manifest: ManifestPackage;
+
 	packagePath: string;
 }
 
@@ -72,6 +77,7 @@ export interface IPackageResult extends IPackage {
 
 export interface IAsset {
 	type: string;
+
 	path: string;
 }
 
@@ -86,6 +92,7 @@ export interface IPackageOptions {
 	 * Defaults to `NAME-VERSION.vsix`.
 	 */
 	readonly packagePath?: string;
+
 	readonly version?: string;
 
 	/**
@@ -111,7 +118,9 @@ export interface IPackageOptions {
 	readonly followSymlinks?: boolean;
 
 	readonly commitMessage?: string;
+
 	readonly gitTagVersion?: boolean;
+
 	readonly updatePackageJson?: boolean;
 
 	/**
@@ -122,6 +131,7 @@ export interface IPackageOptions {
 	readonly cwd?: string;
 
 	readonly readmePath?: string;
+
 	readonly changelogPath?: string;
 
 	/**
@@ -151,19 +161,28 @@ export interface IPackageOptions {
 	 * Should use Yarn instead of NPM.
 	 */
 	readonly useYarn?: boolean;
+
 	readonly dependencyEntryPoints?: string[];
+
 	readonly ignoreFile?: string;
+
 	readonly gitHubIssueLinking?: boolean;
+
 	readonly gitLabIssueLinking?: boolean;
+
 	readonly dependencies?: boolean;
 
 	/**
 	 * Mark this package as a pre-release
 	 */
 	readonly preRelease?: boolean;
+
 	readonly allowStarActivation?: boolean;
+
 	readonly allowMissingRepository?: boolean;
+
 	readonly allowUnusedFilesPattern?: boolean;
+
 	readonly skipLicense?: boolean;
 
 	readonly signTool?: string;
@@ -171,57 +190,95 @@ export interface IPackageOptions {
 
 export interface IProcessor {
 	onFile(file: IFile): Promise<IFile>;
+
 	onEnd(): Promise<void>;
+
 	assets: IAsset[];
+
 	tags: string[];
+
 	vsix: any;
 }
 
 export interface VSIX {
 	id: string;
+
 	displayName: string;
+
 	version: string;
+
 	publisher?: string;
+
 	target?: string;
+
 	engine: string;
+
 	description: string;
+
 	categories: string;
+
 	flags: string;
+
 	icon?: string;
+
 	license?: string;
+
 	assets: IAsset[];
+
 	tags: string;
+
 	links: {
 		repository?: string;
+
 		bugs?: string;
+
 		homepage?: string;
+
 		github?: string;
 	};
+
 	galleryBanner: NonNullable<ManifestPackage["galleryBanner"]>;
+
 	badges?: ManifestPackage["badges"];
+
 	githubMarkdown: boolean;
+
 	enableMarketplaceQnA?: boolean;
+
 	customerQnALink?: ManifestPackage["qna"];
+
 	extensionDependencies: string;
+
 	extensionPack: string;
+
 	extensionKind: string;
+
 	localizedLanguages: string;
+
 	enabledApiProposals: string;
+
 	preRelease: boolean;
+
 	sponsorLink: string;
+
 	pricing: string;
+
 	executesCode: boolean;
 }
 
 export class BaseProcessor implements IProcessor {
 	constructor(protected manifest: ManifestPackage) {}
+
 	assets: IAsset[] = [];
+
 	tags: string[] = [];
+
 	vsix: VSIX = Object.create(null);
 
 	async onFile(file: IFile): Promise<IFile> {
 		return file;
 	}
+
 	async onEnd() {
 		// noop
 	}
@@ -269,9 +326,11 @@ function getBugsUrl(
 		if (typeof manifest.bugs === "string") {
 			return manifest.bugs;
 		}
+
 		if (typeof manifest.bugs === "object" && manifest.bugs.url) {
 			return manifest.bugs.url;
 		}
+
 		if (typeof manifest.bugs === "object" && manifest.bugs.email) {
 			return `mailto:${manifest.bugs.email}`;
 		}
@@ -393,9 +452,13 @@ function isHostTrusted(url: url.URL): boolean {
 
 export interface IVersionBumpOptions {
 	readonly cwd?: string;
+
 	readonly version?: string;
+
 	readonly commitMessage?: string;
+
 	readonly gitTagVersion?: boolean;
+
 	readonly updatePackageJson?: boolean;
 }
 
@@ -463,6 +526,7 @@ export async function versionBump(options: IVersionBumpOptions): Promise<void> {
 
 	if (!process.env["VSCE_TESTS"]) {
 		process.stdout.write(stdout);
+
 		process.stderr.write(stderr);
 	}
 }
@@ -542,6 +606,7 @@ export class ManifestProcessor extends BaseProcessor {
 				const engineSemver = parseSemver(
 					`vscode@${manifest.engines.vscode}`,
 				);
+
 				engineVersion = engineSemver.version;
 			} catch (err) {
 				throw new Error("Failed to parse semver of engines.vscode");
@@ -558,6 +623,7 @@ export class ManifestProcessor extends BaseProcessor {
 						`Platform specific extension is supported by VS Code >=1.61. Current 'engines.vscode' is '${manifest.engines.vscode}'.`,
 					);
 				}
+
 				if (!Targets.has(target)) {
 					throw new Error(
 						`'${target}' is not a valid VS Code target. Valid targets: ${[...Targets].join(", ")}`,
@@ -644,7 +710,9 @@ export class ManifestProcessor extends BaseProcessor {
 			const contents = await read(file);
 
 			const packageJson = JSON.parse(contents);
+
 			packageJson.version = this.options.version;
+
 			file = {
 				...file,
 				contents: JSON.stringify(packageJson, undefined, 2),
@@ -686,9 +754,13 @@ export class ManifestProcessor extends BaseProcessor {
 			this.manifest.activationEvents?.some((e) => e === "*")
 		) {
 			let message = "";
+
 			message += `Using '*' activation is usually a bad idea as it impacts performance.\n`;
+
 			message += `More info: https://code.visualstudio.com/api/references/activation-events#Start-up\n`;
+
 			message += `Use --allow-star-activation to bypass.`;
+
 			util.log.warn(message);
 
 			if (
@@ -754,8 +826,10 @@ export class TagsProcessor extends BaseProcessor {
 				if (!obj) {
 					return false;
 				}
+
 				obj = obj[property];
 			}
+
 			return obj && obj.length > 0;
 		};
 
@@ -874,13 +948,21 @@ export class TagsProcessor extends BaseProcessor {
 
 export abstract class MarkdownProcessor extends BaseProcessor {
 	private regexp: RegExp;
+
 	private baseContentUrl: string | undefined;
+
 	private baseImagesUrl: string | undefined;
+
 	private rewriteRelativeLinks: boolean;
+
 	private isGitHub: boolean;
+
 	private isGitLab: boolean;
+
 	private repositoryUrl: string | undefined;
+
 	private gitHubIssueLinking: boolean;
+
 	private gitLabIssueLinking: boolean;
 
 	protected filesProcessed: number = 0;
@@ -899,20 +981,28 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 		const guess = this.guessBaseUrls(
 			options.githubBranch || options.gitlabBranch,
 		);
+
 		this.baseContentUrl =
 			options.baseContentUrl || (guess && guess.content);
+
 		this.baseImagesUrl =
 			options.baseImagesUrl ||
 			options.baseContentUrl ||
 			(guess && guess.images);
+
 		this.rewriteRelativeLinks = options.rewriteRelativeLinks ?? true;
+
 		this.repositoryUrl = guess && guess.repository;
+
 		this.isGitHub = isGitHubRepository(this.repositoryUrl);
+
 		this.isGitLab = isGitLabRepository(this.repositoryUrl);
+
 		this.gitHubIssueLinking =
 			typeof options.gitHubIssueLinking === "boolean"
 				? options.gitHubIssueLinking
 				: true;
+
 		this.gitLabIssueLinking =
 			typeof options.gitLabIssueLinking === "boolean"
 				? options.gitLabIssueLinking
@@ -999,6 +1089,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 							`Couldn't detect the repository where this extension is published. The image will be broken in ${this.name}. GitHub/GitLab repositories will be automatically detected. Otherwise, please provide the repository URL in package.json or use the --baseContentUrl and --baseImagesUrl options.`,
 						);
 					}
+
 					const prefix = this.baseImagesUrl;
 
 					if (!prefix || !isLinkRelative) {
@@ -1056,6 +1147,7 @@ export abstract class MarkdownProcessor extends BaseProcessor {
 									"issues",
 									issueNumber,
 								);
+
 						result =
 							prefix +
 							`[${owner}/${repositoryName}#${issueNumber}](${issueUrl})`;
@@ -1234,6 +1326,7 @@ export class ReadmeProcessor extends MarkdownProcessor {
 			util.log.error(
 				`The provided readme file (${this.options.readmePath}) could not be found.`,
 			);
+
 			process.exit(1);
 		}
 	}
@@ -1265,6 +1358,7 @@ export class ChangelogProcessor extends MarkdownProcessor {
 			util.log.error(
 				`The provided changelog file (${this.options.changelogPath}) could not be found.`,
 			);
+
 			process.exit(1);
 		}
 	}
@@ -1272,7 +1366,9 @@ export class ChangelogProcessor extends MarkdownProcessor {
 
 export class LicenseProcessor extends BaseProcessor {
 	private didFindLicense = false;
+
 	private expectedLicenseName: string;
+
 	filter: (name: string) => boolean;
 
 	constructor(
@@ -1285,12 +1381,14 @@ export class LicenseProcessor extends BaseProcessor {
 
 		if (!match || !match[1]) {
 			this.expectedLicenseName = "LICENSE, LICENSE.md, or LICENSE.txt";
+
 			this.filter = (name) =>
 				/^extension\/licen[cs]e(\.(md|txt))?$/i.test(name);
 		} else {
 			this.expectedLicenseName = match[1];
 
 			const regexp = new RegExp(`^${util.filePathToVsixPath(match[1])}$`);
+
 			this.filter = regexp.test.bind(regexp);
 		}
 
@@ -1304,6 +1402,7 @@ export class LicenseProcessor extends BaseProcessor {
 			if (this.filter(normalizedPath)) {
 				if (!path.extname(normalizedPath)) {
 					file.path += ".txt";
+
 					normalizedPath += ".txt";
 				}
 
@@ -1311,7 +1410,9 @@ export class LicenseProcessor extends BaseProcessor {
 					type: "Microsoft.VisualStudio.Services.Content.License",
 					path: normalizedPath,
 				});
+
 				this.vsix.license = normalizedPath;
+
 				this.didFindLicense = true;
 			}
 		}
@@ -1345,6 +1446,7 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 				),
 			);
 		}
+
 		if (manifest.browser) {
 			this.entryPoints.add(
 				util.normalize(
@@ -1358,6 +1460,7 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 		if (filePath.endsWith(".js") || filePath.endsWith(".cjs")) {
 			return filePath;
 		}
+
 		return filePath + ".js";
 	}
 
@@ -1380,6 +1483,7 @@ class LaunchEntryPointProcessor extends BaseProcessor {
 
 class IconProcessor extends BaseProcessor {
 	private icon: string | undefined;
+
 	private didFindIcon = false;
 
 	constructor(manifest: ManifestPackage) {
@@ -1388,6 +1492,7 @@ class IconProcessor extends BaseProcessor {
 		this.icon =
 			manifest.icon &&
 			path.posix.normalize(util.filePathToVsixPath(manifest.icon));
+
 		delete this.vsix.icon;
 	}
 
@@ -1396,12 +1501,15 @@ class IconProcessor extends BaseProcessor {
 
 		if (normalizedPath === this.icon) {
 			this.didFindIcon = true;
+
 			this.assets.push({
 				type: "Microsoft.VisualStudio.Services.Icons.Default",
 				path: normalizedPath,
 			});
+
 			this.vsix.icon = this.icon;
 		}
+
 		return Promise.resolve(file);
 	}
 
@@ -1473,6 +1581,7 @@ function deduceExtensionKinds(manifest: ManifestPackage): ExtensionKind[] {
 		if (manifest.browser) {
 			return ["workspace", "web"];
 		}
+
 		return ["workspace"];
 	}
 
@@ -1534,6 +1643,7 @@ export class NLSProcessor extends BaseProcessor {
 					const translationPath = util.normalize(
 						translation.path.replace(/^\.[\/\\]/, ""),
 					);
+
 					translations[localization.languageId.toUpperCase()] =
 						util.filePathToVsixPath(translationPath);
 				}
@@ -1564,6 +1674,7 @@ export class NLSProcessor extends BaseProcessor {
 
 export class ValidationProcessor extends BaseProcessor {
 	private files = new Map<string, string[]>();
+
 	private duplicates = new Set<string>();
 
 	async onFile(file: IFile): Promise<IFile> {
@@ -1573,6 +1684,7 @@ export class ValidationProcessor extends BaseProcessor {
 
 		if (existing) {
 			this.duplicates.add(lower);
+
 			existing.push(file.path);
 		} else {
 			this.files.set(lower, [file.path]);
@@ -1606,6 +1718,7 @@ export function validateManifestForPackaging(
 	if (!manifest.engines) {
 		throw new Error("Manifest missing field: engines");
 	}
+
 	const engines = {
 		...manifest.engines,
 		vscode: validateEngineCompatibility(manifest.engines.vscode),
@@ -1644,6 +1757,7 @@ export function validateManifestForPackaging(
 
 	try {
 		const engineSemver = parseSemver(`vscode@${engines.vscode}`);
+
 		parsedEngineVersion = engineSemver.version;
 	} catch (err) {
 		throw new Error("Failed to parse semver of engines.vscode");
@@ -1742,10 +1856,12 @@ export function validateManifestForPackaging(
 
 		try {
 			const sponsorUrl = new url.URL(manifest.sponsor.url);
+
 			isValidSponsorUrl = /^(https|http):$/i.test(sponsorUrl.protocol);
 		} catch (error) {
 			isValidSponsorUrl = false;
 		}
+
 		if (!isValidSponsorUrl) {
 			throw new Error(
 				`Manifest contains invalid value '${manifest.sponsor.url}' in the 'sponsor' property. It must be a valid URL with a HTTP or HTTPS protocol.`,
@@ -1820,6 +1936,7 @@ export function readManifest(
 			if (!translations) {
 				return manifest;
 			}
+
 			return patchNLS(manifest, translations);
 		},
 	);
@@ -2183,6 +2300,7 @@ export function processFiles(
 								r.add(tag);
 							}
 						}
+
 						return r;
 					}, new Set()),
 				].join(",");
@@ -2269,6 +2387,7 @@ function writeVsix(files: IFile[], packagePath: string): Promise<void> {
 			() =>
 				new Promise((c, e) => {
 					const zip = new yazl.ZipFile();
+
 					files.forEach((f) =>
 						isInMemoryFile(f)
 							? zip.addBuffer(
@@ -2284,13 +2403,17 @@ function writeVsix(files: IFile[], packagePath: string): Promise<void> {
 									mode: f.mode,
 								}),
 					);
+
 					zip.end();
 
 					const zipStream = fs.createWriteStream(packagePath);
+
 					zip.outputStream.pipe(zipStream);
 
 					zip.outputStream.once("error", e);
+
 					zipStream.once("error", e);
+
 					zipStream.once("finish", () => c());
 				}),
 		);
@@ -2338,9 +2461,11 @@ export async function prepublish(
 			shell: true,
 			stdio: "inherit",
 		});
+
 		child.on("exit", (code) =>
 			code === 0 ? c() : e(`${tool} failed with exit code ${code}`),
 		);
+
 		child.on("error", e);
 	});
 }
@@ -2386,6 +2511,7 @@ export async function pack(
 	}
 
 	const packagePath = await getPackagePath(cwd, manifest, options);
+
 	await writeVsix(files, path.resolve(packagePath));
 
 	return { manifest, packagePath, files };
@@ -2433,8 +2559,10 @@ export function generateManifest(
 		const packageFolder = path.dirname(packageFile);
 
 		const packageName = path.basename(packageFile, ".vsix");
+
 		outputFile = path.join(packageFolder, `${packageName}.manifest`);
 	}
+
 	return vsceSign.generateManifest(packageFile, outputFile);
 }
 
@@ -2450,6 +2578,7 @@ export async function verifySignature(
 
 	try {
 		const result = await vsceSign.verify(packageFile, sigzipPath, true);
+
 		console.log(`Signature verification result: ${result.code}`);
 
 		if (result.output) {
@@ -2475,9 +2604,11 @@ export async function packageCommand(
 	const cwd = options.cwd || process.cwd();
 
 	const manifest = await readManifest(cwd);
+
 	util.patchOptionsWithManifest(options, manifest);
 
 	await prepublish(cwd, manifest, options.useYarn);
+
 	await versionBump(options);
 
 	const { packagePath, files } = await pack(options);
@@ -2489,6 +2620,7 @@ export async function packageCommand(
 	const stats = await fs.promises.stat(packagePath);
 
 	const packageSize = util.bytesToString(stats.size);
+
 	util.log.done(
 		`Packaged: ${packagePath} ` +
 			chalk.bold(`(${files.length} files, ${packageSize})`),
@@ -2497,13 +2629,21 @@ export async function packageCommand(
 
 export interface IListFilesOptions {
 	readonly cwd?: string;
+
 	readonly manifest?: ManifestPackage;
+
 	readonly useYarn?: boolean;
+
 	readonly packagedDependencies?: string[];
+
 	readonly ignoreFile?: string;
+
 	readonly dependencies?: boolean;
+
 	readonly prepublish?: boolean;
+
 	readonly readmePath?: string;
+
 	readonly followSymlinks?: boolean;
 }
 
@@ -2534,11 +2674,17 @@ export async function listFiles(
 
 interface ILSOptions {
 	readonly tree?: boolean;
+
 	readonly useYarn?: boolean;
+
 	readonly packagedDependencies?: string[];
+
 	readonly ignoreFile?: string;
+
 	readonly dependencies?: boolean;
+
 	readonly readmePath?: string;
+
 	readonly followSymlinks?: boolean;
 }
 
@@ -2557,6 +2703,7 @@ export async function ls(options: ILSOptions = {}): Promise<void> {
 			getDefaultPackageName(manifest, options),
 			files.map((f) => ({ origin: path.join(cwd, f), tree: f })),
 		);
+
 		console.log(printableFileStructure.join("\n"));
 	} else {
 		console.log(files.join("\n"));
@@ -2577,9 +2724,13 @@ export async function printAndValidatePackagedFiles(
 
 	if (files.length > 5000 || jsFiles.length > 100) {
 		let message = "";
+
 		message += `This extension consists of ${chalk.bold(String(files.length))} files, out of which ${chalk.bold(String(jsFiles.length))} are JavaScript files. `;
+
 		message += `For performance reasons, you should bundle your extension: ${chalk.underline("https://aka.ms/vscode-bundle-extension")}. `;
+
 		message += `You should also exclude unnecessary files by adding them to your .vscodeignore: ${chalk.underline("https://aka.ms/vscode-vscodeignore")}.\n`;
+
 		util.log.warn(message);
 	}
 
@@ -2590,9 +2741,13 @@ export async function printAndValidatePackagedFiles(
 
 	if (!hasIgnoreFile && !manifest.files) {
 		let message = "";
+
 		message += `Neither a ${chalk.bold(".vscodeignore")} file nor a ${chalk.bold('"files"')} property in package.json was found. `;
+
 		message += `To ensure only necessary files are included in your extension, `;
+
 		message += `add a .vscodeignore file or specify the "files" property in package.json. More info: ${chalk.underline("https://aka.ms/vscode-vscodeignore")}\n`;
+
 		util.log.warn(message);
 	}
 	// Throw an error if the extension uses both a .vscodeignore file and the files property in package.json
@@ -2602,10 +2757,15 @@ export async function printAndValidatePackagedFiles(
 		manifest.files.length > 0
 	) {
 		let message = "";
+
 		message += `Both a ${chalk.bold(".vscodeignore")} file and a ${chalk.bold('"files"')} property in package.json were found. `;
+
 		message += `VSCE does not support combining both strategies. `;
+
 		message += `Either remove the ${chalk.bold(".vscodeignore")} file or the ${chalk.bold('"files"')} property in package.json.`;
+
 		util.log.error(message);
+
 		process.exit(1);
 	}
 	// Throw an error if the extension uses the files property in package.json and
@@ -2663,14 +2823,21 @@ export async function printAndValidatePackagedFiles(
 
 		if (unusedIncludePatterns.length > 0) {
 			let message = "";
+
 			message += `The following include patterns in the ${chalk.bold('"files"')} property in package.json do not match any files packaged in the extension:\n`;
+
 			message += unusedIncludePatterns
 				.map((p) => `  - ${p.relative}`)
 				.join("\n");
+
 			message += "\nRemove any include pattern which is not needed.\n";
+
 			message += `\n=> Run ${chalk.bold("vsce ls --tree")} to see all included files.\n`;
+
 			message += `=> Use ${chalk.bold("--allow-unused-files-pattern")} to skip this check`;
+
 			util.log.error(message);
+
 			process.exit(1);
 		}
 	}
@@ -2690,7 +2857,9 @@ export async function printAndValidatePackagedFiles(
 	);
 
 	let message = "";
+
 	message += chalk.bold.blue(`Files included in the VSIX:\n`);
+
 	message += printableFileStructure.join("\n");
 
 	// If not all files have been printed, mention how all files can be printed
@@ -2699,5 +2868,6 @@ export async function printAndValidatePackagedFiles(
 	}
 
 	message += "\n";
+
 	util.log.info(message);
 }

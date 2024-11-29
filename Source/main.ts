@@ -622,6 +622,7 @@ module.exports = function (argv: string[]): void {
 				? `${help}, did you mean '${suggestion}'?\n`
 				: `${help}.\n`;
 		});
+
 		process.exit(1);
 	});
 

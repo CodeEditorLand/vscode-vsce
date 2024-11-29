@@ -41,11 +41,17 @@ const tmpName = promisify(tmp.tmpName);
  */
 export interface IPublishOptions {
 	readonly packagePath?: string[];
+
 	readonly version?: string;
+
 	readonly targets?: string[];
+
 	readonly ignoreOtherTargetFolders?: boolean;
+
 	readonly commitMessage?: string;
+
 	readonly gitTagVersion?: boolean;
+
 	readonly updatePackageJson?: boolean;
 
 	/**
@@ -54,9 +60,13 @@ export interface IPublishOptions {
 	 * Defaults to `process.cwd()`.
 	 */
 	readonly cwd?: string;
+
 	readonly readmePath?: string;
+
 	readonly changelogPath?: string;
+
 	readonly githubBranch?: string;
+
 	readonly gitlabBranch?: string;
 
 	/**
@@ -73,7 +83,9 @@ export interface IPublishOptions {
 	 * Should use Yarn instead of NPM.
 	 */
 	readonly useYarn?: boolean;
+
 	readonly dependencyEntryPoints?: string[];
+
 	readonly ignoreFile?: string;
 
 	/**
@@ -87,22 +99,37 @@ export interface IPublishOptions {
 	 * Defaults to the stored one.
 	 */
 	readonly pat?: string;
+
 	readonly azureCredential?: boolean;
+
 	readonly allowProposedApi?: boolean;
+
 	readonly noVerify?: boolean;
+
 	readonly allowProposedApis?: string[];
+
 	readonly allowAllProposedApis?: boolean;
+
 	readonly dependencies?: boolean;
+
 	readonly preRelease?: boolean;
+
 	readonly allowStarActivation?: boolean;
+
 	readonly allowMissingRepository?: boolean;
+
 	readonly allowUnusedFilesPattern?: boolean;
+
 	readonly skipDuplicate?: boolean;
+
 	readonly skipLicense?: boolean;
 
 	readonly sigzipPath?: string[];
+
 	readonly manifestPath?: string[];
+
 	readonly signaturePath?: string[];
+
 	readonly signTool?: string;
 }
 
@@ -157,6 +184,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 				} catch (err) {
 					throw new Error(`Invalid extension VSIX manifest. ${err}`);
 				}
+
 				if (!isPreReleasePackage) {
 					throw new Error(
 						`Cannot use '--pre-release' flag with a package that was not packaged as pre-release. Please package it using the '--pre-release' flag and publish again.`,
@@ -198,12 +226,14 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 		const cwd = options.cwd || process.cwd();
 
 		const manifest = await readManifest(cwd);
+
 		patchOptionsWithManifest(options, manifest);
 
 		// Validate marketplace requirements before prepublish to avoid unnecessary work
 		validateManifestForPublishing(manifest, options);
 
 		await prepublish(cwd, manifest, options.useYarn);
+
 		await versionBump(options);
 
 		if (options.targets) {
@@ -224,6 +254,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 				const sigzipPath = options.signTool
 					? await signPackage(packagePath, options.signTool)
 					: undefined;
+
 				await _publish(packagePath, sigzipPath, manifestValidated, {
 					...options,
 					target,
@@ -242,6 +273,7 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 			const sigzipPath = options.signTool
 				? await signPackage(packagePath, options.signTool)
 				: undefined;
+
 			await _publish(packagePath, sigzipPath, manifestValidated, options);
 		}
 	}
@@ -249,11 +281,17 @@ export async function publish(options: IPublishOptions = {}): Promise<any> {
 
 export interface IInternalPublishOptions {
 	readonly target?: string;
+
 	readonly pat?: string;
+
 	readonly allowProposedApi?: boolean;
+
 	readonly noVerify?: boolean;
+
 	readonly allowProposedApis?: string[];
+
 	readonly allowAllProposedApis?: boolean;
+
 	readonly skipDuplicate?: boolean;
 }
 
@@ -375,7 +413,9 @@ async function _publish(
 	log.info(
 		`Extension URL (might take a few minutes): ${getPublishedUrl(name)}`,
 	);
+
 	log.info(`Hub URL: ${getHubUrl(manifest.publisher, manifest.name)}`);
+
 	log.done(`Published ${description}.`);
 }
 
@@ -439,7 +479,9 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 		[publisher, name] = options.id.split(".");
 	} else {
 		const manifest = await readManifest(options.cwd);
+
 		publisher = validatePublisher(manifest.publisher);
+
 		name = manifest.name;
 	}
 
@@ -460,6 +502,7 @@ export async function unpublish(options: IUnpublishOptions = {}): Promise<any> {
 	const api = await getGalleryAPI(pat);
 
 	await api.deleteExtension(publisher, name);
+
 	log.done(`Deleted extension: ${fullName}!`);
 }
 

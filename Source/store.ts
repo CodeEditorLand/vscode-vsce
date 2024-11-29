@@ -15,6 +15,7 @@ import { validatePublisher } from "./validation";
 
 export interface IPublisher {
 	readonly name: string;
+
 	readonly pat: string;
 }
 
@@ -22,7 +23,9 @@ export interface IStore extends Iterable<IPublisher> {
 	readonly size: number;
 
 	get(name: string): IPublisher | undefined;
+
 	add(publisher: IPublisher): Promise<void>;
+
 	delete(name: string): Promise<void>;
 }
 
@@ -81,11 +84,13 @@ export class FileStore implements IStore {
 			...this.publishers.filter((p) => p.name !== publisher.name),
 			publisher,
 		];
+
 		await this.save();
 	}
 
 	async delete(name: string): Promise<void> {
 		this.publishers = this.publishers.filter((p) => p.name !== name);
+
 		await this.save();
 	}
 
@@ -129,6 +134,7 @@ export class KeytarStore implements IStore {
 			...this.publishers.filter((p) => p.name !== publisher.name),
 			publisher,
 		];
+
 		await this.keytar.setPassword(
 			this.serviceName,
 			publisher.name,
@@ -138,6 +144,7 @@ export class KeytarStore implements IStore {
 
 	async delete(name: string): Promise<void> {
 		this.publishers = this.publishers.filter((p) => p.name !== name);
+
 		await this.keytar.deletePassword(this.serviceName, name);
 	}
 
@@ -148,7 +155,9 @@ export class KeytarStore implements IStore {
 
 export interface IVerifyPatOptions {
 	readonly publisherName?: string;
+
 	readonly pat?: string;
+
 	readonly azureCredential?: boolean;
 }
 
@@ -164,6 +173,7 @@ export async function verifyPat(options: IVerifyPatOptions): Promise<void> {
 		// (Creator, Owner, Contributor, Reader) on the publisher, we get a 200,
 		// otherwise we get a 403.
 		const api = await getSecurityRolesAPI(pat);
+
 		await api.getRoleAssignments("gallery.publisher", publisherName);
 	} catch (error) {
 		throw new Error(
@@ -184,6 +194,7 @@ async function requestPAT(publisherName: string): Promise<string> {
 		`Personal Access Token for publisher '${publisherName}':`,
 		{ silent: true, replace: "*" },
 	);
+
 	await verifyPat({ publisherName, pat });
 
 	return pat;
@@ -200,6 +211,7 @@ async function openDefaultStore(): Promise<IStore> {
 		keytarStore = await KeytarStore.open();
 	} catch (err) {
 		const store = await FileStore.open();
+
 		log.warn(
 			`Failed to open credential store. Falling back to storing secrets clear-text in: ${store.path}`,
 		);
@@ -216,6 +228,7 @@ async function openDefaultStore(): Promise<IStore> {
 		}
 
 		await fileStore.deleteStore();
+
 		log.info(
 			`Migrated ${fileStore.size} publishers to system credential manager. Deleted local store '${fileStore.path}'.`,
 		);
@@ -236,7 +249,9 @@ export async function getPublisher(publisherName: string): Promise<IPublisher> {
 	}
 
 	const pat = await requestPAT(publisherName);
+
 	publisher = { name: publisherName, pat };
+
 	await store.add(publisher);
 
 	return publisher;
@@ -262,7 +277,9 @@ export async function loginPublisher(
 	}
 
 	const pat = await requestPAT(publisherName);
+
 	publisher = { name: publisherName, pat };
+
 	await store.add(publisher);
 
 	return publisher;
@@ -294,10 +311,13 @@ export async function deletePublisher(publisherName: string): Promise<void> {
 	}
 
 	const api = await getGalleryAPI(publisher.pat);
+
 	await api.deletePublisher(publisherName);
 
 	const store = await openDefaultStore();
+
 	await store.delete(publisherName);
+
 	log.done(`Deleted publisher '${publisherName}'.`);
 }
 

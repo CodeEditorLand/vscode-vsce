@@ -13,11 +13,17 @@ const exists = (file: string) =>
 
 interface IOptions {
 	cwd?: string;
+
 	stdio?: any;
+
 	customFds?: any;
+
 	env?: any;
+
 	timeout?: number;
+
 	maxBuffer?: number;
+
 	killSignal?: string;
 }
 
@@ -39,12 +45,14 @@ function exec(
 			(err, stdout: string, stderr: string) => {
 				if (disposeCancellationListener) {
 					disposeCancellationListener();
+
 					disposeCancellationListener = null;
 				}
 
 				if (err) {
 					return e(err);
 				}
+
 				c({ stdout, stderr });
 			},
 		);
@@ -53,6 +61,7 @@ function exec(
 			disposeCancellationListener = cancellationToken.subscribe(
 				(err: any) => {
 					child.kill();
+
 					e(err);
 				},
 			);
@@ -87,12 +96,15 @@ function getNpmDependencies(cwd: string): Promise<string[]> {
 
 interface YarnTreeNode {
 	name: string;
+
 	children: YarnTreeNode[];
 }
 
 export interface YarnDependency {
 	name: string;
+
 	path: string;
+
 	children: YarnDependency[];
 }
 
@@ -109,6 +121,7 @@ function asYarnDependency(
 
 	try {
 		const parseResult = parseSemver(tree.name);
+
 		name = parseResult.name;
 	} catch (err) {
 		name = tree.name.replace(/^([^@+])@.*$/, "$1");
@@ -145,27 +158,32 @@ function selectYarnDependencies(
 				if (this.data[dep.name]) {
 					throw Error(`Dependency seen more than once: ${dep.name}`);
 				}
+
 				this.data[dep.name] = dep;
 			}
 		}
+
 		find(name: string): YarnDependency {
 			let result = this.data[name];
 
 			if (!result) {
 				throw new Error(`Could not find dependency: ${name}`);
 			}
+
 			return result;
 		}
 	})();
 
 	const reached = new (class {
 		values: YarnDependency[] = [];
+
 		add(dep: YarnDependency): boolean {
 			if (this.values.indexOf(dep) < 0) {
 				this.values.push(dep);
 
 				return true;
 			}
+
 			return false;
 		}
 	})();
@@ -177,10 +195,12 @@ function selectYarnDependencies(
 			// already seen -> done
 			return;
 		}
+
 		for (const child of dep.children) {
 			visit(child.name);
 		}
 	};
+
 	packagedDependencies.forEach(visit);
 
 	return reached.values;
@@ -240,8 +260,10 @@ async function getYarnDependencies(
 
 	const flatten = (dep: YarnDependency) => {
 		result.add(dep.path);
+
 		dep.children.forEach(flatten);
 	};
+
 	deps.forEach(flatten);
 
 	return [...result];
@@ -261,9 +283,11 @@ export async function detectYarn(cwd: string): Promise<boolean> {
 					`Detected presence of ${name}. Using 'yarn' instead of 'npm' (to override this pass '--no-yarn' on the command line).`,
 				);
 			}
+
 			return true;
 		}
 	}
+
 	return false;
 }
 
