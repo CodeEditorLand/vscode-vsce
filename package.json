@@ -6,7 +6,7 @@
 		"Microsoft Corporation"
 	],
 	"dependencies": {
-		"@vscode/vsce-sign": "2.0.5",
+		"@codeeditorland/vsce-sign": "2.0.5",
 		"chalk": "5.3.0",
 		"cheerio": "1.0.0",
 		"cockatiel": "3.2.1",
@@ -55,7 +55,7 @@
 		"spec": "src/test/**/*.ts",
 		"watch-files": "src/**"
 	},
-	"name": "@vscode/vsce",
+	"name": "@codeeditorland/vsce",
 	"optionalDependencies": {
 		"keytar": "7.9.0"
 	},
