@@ -610,11 +610,16 @@ export class ManifestProcessor extends BaseProcessor {
 
 			const minEngineVersion = semver.minVersion(engineSemver.range);
 			if (!minEngineVersion) {
-				throw new Error('Failed to get minVersion of engines.vscode')
+				throw new Error("Failed to get minVersion of engines.vscode");
 			}
 
 			if (target) {
-				if (engineSemver.version !== 'latest' && !semver.satisfies(minEngineVersion, '>=1.61', { includePrerelease: true })) {
+				if (
+					engineSemver.version !== "latest" &&
+					!semver.satisfies(minEngineVersion, ">=1.61", {
+						includePrerelease: true,
+					})
+				) {
 					throw new Error(
 						`Platform specific extension is supported by VS Code >=1.61. Current 'engines.vscode' is '${manifest.engines.vscode}'.`,
 					);
@@ -628,7 +633,12 @@ export class ManifestProcessor extends BaseProcessor {
 			}
 
 			if (preRelease) {
-				if (engineSemver.version !== 'latest' && !semver.satisfies(minEngineVersion, '>=1.63', { includePrerelease: true })) {
+				if (
+					engineSemver.version !== "latest" &&
+					!semver.satisfies(minEngineVersion, ">=1.63", {
+						includePrerelease: true,
+					})
+				) {
 					throw new Error(
 						`Pre-release versions are supported by VS Code >=1.63. Current 'engines.vscode' is '${manifest.engines.vscode}'.`,
 					);
@@ -2385,13 +2395,24 @@ function writeVsix(files: IFile[], packagePath: string): Promise<void> {
 					if (sde) {
 						const epoch = parseInt(sde);
 						zipOptions.mtime = new Date(epoch * 1000);
-						files = files.sort((a, b) => a.path.localeCompare(b.path))
+						files = files.sort((a, b) =>
+							a.path.localeCompare(b.path),
+						);
 					}
 
-					files.forEach(f =>
+					files.forEach((f) =>
 						isInMemoryFile(f)
-							? zip.addBuffer(typeof f.contents === 'string' ? Buffer.from(f.contents, 'utf8') : f.contents, f.path, { ...zipOptions, mode: f.mode })
-							: zip.addFile(f.localPath, f.path, { ...zipOptions, mode: f.mode })
+							? zip.addBuffer(
+									typeof f.contents === "string"
+										? Buffer.from(f.contents, "utf8")
+										: f.contents,
+									f.path,
+									{ ...zipOptions, mode: f.mode },
+								)
+							: zip.addFile(f.localPath, f.path, {
+									...zipOptions,
+									mode: f.mode,
+								}),
 					);
 
 					zip.end();
@@ -2835,7 +2856,7 @@ export async function printAndValidatePackagedFiles(
 	// Print the files included in the package
 	const printableFileStructure = await util.generateFileStructureTree(
 		path.basename(await getPackagePath(cwd, manifest, options)),
-		files.map(f => ({
+		files.map((f) => ({
 			// File path relative to the extension root
 			origin: !isInMemoryFile(f)
 				? f.localPath
